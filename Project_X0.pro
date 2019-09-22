@@ -4,6 +4,7 @@
 #
 #-------------------------------------------------
 
+include(tests/user/gtest_dependency.pri)
 QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -25,11 +26,14 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
-        /sources/main.cpp \
-        /sources/mainwindow.cpp
-
+        sources/main.cpp \
+        sources/mainwindow.cpp \
+        sources/user.cpp
 HEADERS += \
-        includes/mainwindow.h
+        includes/mainwindow.h \
+        includes/user.h \
+        tests/user/tst_user.h
+
 
 FORMS += \
         mainwindow.ui
