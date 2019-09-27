@@ -22,4 +22,3 @@ TEST(user, User)
   EXPECT_NO_FATAL_FAILURE (ivan.setPost (position::BOSS));
 }
 
-int test();
