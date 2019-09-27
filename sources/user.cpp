@@ -2,49 +2,49 @@
 
 User::User(const QString &input_email,
            const QString &input_password,
-           const position input_post) : email(input_email),
-  password(input_password), post(input_post){
+           const position input_post) : _email(input_email),
+  _password(input_password), _post(input_post){
 
 }
 
 User::User(const QString &input_name, const QString &input_surname,
            const QString &input_email, const QString &input_password,
-           const position input_post) : name(input_name),
-  surname(input_surname), email(input_email),
-  password(input_password), post(input_post){
+           const position input_post) : _name(input_name),
+  _surname(input_surname), _email(input_email),
+  _password(input_password), _post(input_post){
 
 }
 
 void User::setName(const QString &newName){
-  this->name = newName;
+  this->_name = newName;
 }
 
 void User::setPost(const position newPost){
-  this->post = newPost;
+  this->_post = newPost;
 }
 
 void User::setSurname(const QString &newSurname){
-  this->surname = newSurname;
+  this->_surname = newSurname;
 }
 
 void User::setEmail(const QString &newEmail){
-  this->email = newEmail;
+  this->_email = newEmail;
 }
 
 void User::setPassword(const QString &newPassword){
-  this->password = newPassword;
+  this->_password = newPassword;
 }
 
 QString User::getName(){
-  return this->name;
+  return this->_name;
 }
 QString User::getSurname(){
-  return this->surname;
+  return this->_surname;
 }
 
 QString User::getEmail(){
-  return this->email;
+  return this->_email;
 }
 position User::getPost (){
-  return this->post;
+  return this->_post;
 }

@@ -11,11 +11,11 @@ enum position{
 
 class User{
 private:
-  QString name;
-  QString surname;
-  QString email;
-  QString password;
-  position post;
+  QString _name;
+  QString _surname;
+  QString _email;
+  QString _password;
+  position _post;
 
 public:
   User(const QString &input_email, const QString &input_password, const position input_post = USER);
