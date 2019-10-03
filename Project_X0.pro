@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-include(tests/user/gtest_dependency.pri)
+include(tests/gtest_dependency.pri)
 QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -28,11 +28,17 @@ CONFIG += c++11
 SOURCES += \
         sources/main.cpp \
         sources/mainwindow.cpp \
-        sources/user.cpp
+        sources/user.cpp \
+    sources/calendar.cpp \
+    sources/task.cpp
 HEADERS += \
         includes/mainwindow.h \
         includes/user.h \
-        tests/user/tst_user.h
+        tests/user/tst_user.h \
+    includes/calendar.h \
+    tests/Calendar/tst_calendar.h \
+    includes/task.h \
+    includes/taskfolder.h
 
 
 FORMS += \
