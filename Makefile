@@ -267,6 +267,7 @@ Makefile: Project_X0.pro ..\..\Qt\5.12.0\msvc2017_64\mkspecs\win32-msvc\qmake.co
 		Project_X0.pro \
 		..\..\Qt\5.12.0\msvc2017_64\lib\Qt5Widgets.prl \
 		..\..\Qt\5.12.0\msvc2017_64\lib\Qt5Gui.prl \
+		..\..\Qt\5.12.0\msvc2017_64\lib\Qt5Network.prl \
 		..\..\Qt\5.12.0\msvc2017_64\lib\Qt5Core.prl \
 		..\..\Qt\5.12.0\msvc2017_64\lib\qtmaind.prl
 	$(QMAKE) -o Makefile Project_X0.pro -spec win32-msvc "CONFIG+=debug" "CONFIG+=qml_debug"
@@ -462,6 +463,7 @@ tests\gtest_dependency.pri:
 Project_X0.pro:
 ..\..\Qt\5.12.0\msvc2017_64\lib\Qt5Widgets.prl:
 ..\..\Qt\5.12.0\msvc2017_64\lib\Qt5Gui.prl:
+..\..\Qt\5.12.0\msvc2017_64\lib\Qt5Network.prl:
 ..\..\Qt\5.12.0\msvc2017_64\lib\Qt5Core.prl:
 ..\..\Qt\5.12.0\msvc2017_64\lib\qtmaind.prl:
 qmake: FORCE

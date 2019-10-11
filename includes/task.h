@@ -25,7 +25,7 @@ class Task : public QWidget{
   QListWidget _employee;
   QListWidget _subtask;
   QGridLayout _layout;
-  QPushButton _editButton;
+  QPushButton _editButton;//♥
   //Edit
   QLineEdit _targetEdit;
   QTextEdit _descriptionEdit;

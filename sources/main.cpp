@@ -5,14 +5,18 @@
 //#include <gtest/gtest.h>
 #include "../includes/task.h"
 
+#include "../includes/taskfolder.h"
+
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-//    MainWindow w;
-//    w.show();
+
+
+
+    Tcp tcp;
+    tcp.doConenction();
 
     Task task;
     task.show();
-
     return a.exec();
 }
