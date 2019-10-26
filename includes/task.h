@@ -13,9 +13,13 @@
 #include <QTextEdit>
 #include <QDateEdit>
 #include "user.h"
+#include "network.h"
 
-class Task : public QWidget{
+class Task : public QWidget
+{
   Q_OBJECT
+
+  Network *_network_manager;
 
   //Static
   QString _name;
@@ -25,13 +29,17 @@ class Task : public QWidget{
   QListWidget _employee;
   QListWidget _subtask;
   QGridLayout _layout;
-  QPushButton _editButton;//♥
+  QPushButton _editButton;
+
   //Edit
   QLineEdit _targetEdit;
   QTextEdit _descriptionEdit;
   QDateEdit _dateEdit;
+
 public:
-  Task();
+  Task(QString name);
+  ~Task();
+
 public slots:
   void SlotEditButton();
 };
