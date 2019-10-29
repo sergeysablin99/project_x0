@@ -9,6 +9,7 @@ Network::Network()
 
 void Network::doRequest(QString string)
 {
+
   QNetworkRequest *request = new QNetworkRequest(QUrl("http://localhost:7474/db/data/transaction/commit"));
 
   request->setRawHeader ("Accept", "application/json; charset=UTF-8");
@@ -30,7 +31,7 @@ void Network::slotReadyRead(QNetworkReply *get_reply)
   QByteArray *bytes = new QByteArray(get_reply->readAll());
 
   this->_reply = nlohmann::json::parse(*bytes);
-
+  qDebug() << bytes->data() << "\n";
   this->_wait.exit();
 
   delete bytes;

@@ -1,22 +1,29 @@
-#ifndef MAINWINDOW_H
+﻿#ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QGridLayout>
+#include <QListWidget>
+#include "Project.h"
+#include "network.h"
 
-namespace Ui {
-class MainWindow;
-}
-
-class MainWindow : public QMainWindow
+class MainWindow : public QWidget
 {
     Q_OBJECT
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
+
     ~MainWindow();
 
+public slots:
+  void openProject(QListWidgetItem *item);
+
 private:
-    Ui::MainWindow *ui;
+    QListWidget _projectList;
+    Project *_project;
+    Network *_network_manager;
+    QGridLayout _layout;
 };
 
 #endif // MAINWINDOW_H

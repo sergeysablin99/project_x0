@@ -37,6 +37,7 @@ class Task : public QWidget
   QDateEdit _dateEdit;
 
 public:
+  Task();
   Task(QString name);
   ~Task();
 

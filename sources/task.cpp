@@ -1,6 +1,11 @@
 ﻿#include "../includes/task.h"
 #include "../includes/network.h"
 
+Task::Task()
+{
+  this->_network_manager = nullptr;
+}
+
 Task::Task(QString name)
 {
   this->_network_manager = new Network;
@@ -13,10 +18,13 @@ Task::Task(QString name)
 
   // Получить из базы данных дедлайн задачи
   this->_date.setText(_network_manager->getReply("date")[0].data());
+
   this->setWindowTitle(this->_name);
   this->setMinimumSize(400, 250);
+
   connect(&(this->_editButton), &QPushButton::clicked, this, &Task::SlotEditButton);
 
+  //Элементы для изменения задачи
   this->_dateEdit.setReadOnly(false);
   this->_dateEdit.setVisible(false);
 
@@ -41,6 +49,7 @@ Task::Task(QString name)
 
   this->_editButton.setText("Edit");
 
+  //Добавим виджеты на экран
   this->_layout.setSpacing(10);
   this->_layout.addWidget(&(this->_target), 0, 0, Qt::AlignLeft);
   this->_layout.addWidget(&(this->_date), 0, 1, Qt::AlignLeft);
@@ -52,37 +61,38 @@ Task::Task(QString name)
   this->_layout.addWidget(&(this->_descriptionEdit), 1, 0, Qt::AlignLeft);
   this->_layout.addWidget(&(this->_dateEdit), 0, 2, Qt::AlignLeft);
 
-  this->setLayout(&_layout);
+  this->setLayout(&(this->_layout));
 
   //Вектор для считывания списков
-  std::vector<std::string> *temp = new std::vector<std::string>;
+  std::vector<std::string> *replyData = new std::vector<std::string>;
 
   // Получить из базы данных исполнителей
-  this->_network_manager->doRequest("MATCH (n:Employee) RETURN n");
+  this->_network_manager->doRequest("MATCH (n:Employee)-[:WORKS_AT]->(m:Task {name:'" + this->_name + "'}) RETURN n");
   this->_network_manager->_wait.exec(); //Ждём, пока придёт ответ от сервера
 
-  *temp = this->_network_manager->getReply("name");
+  *replyData = this->_network_manager->getReply("name");
 
-  std::for_each(temp->begin(),
-                temp->end(), [this](std::string value)
+  std::for_each(replyData->begin(),
+                replyData->end(), [this](std::string value)
   {
     this->_employee.addItem(value.data());
   });
 
   //Получим из базы данных список задач
-  this->_network_manager->doRequest("MATCH (n:Task) RETURN n");
+  this->_network_manager->doRequest("MATCH (n:Task)-[:LINKED_WITH]-(m:Task {name:'" + this->_name + "'}) RETURN n");
   this->_network_manager->_wait.exec();
-  *temp = this->_network_manager->getReply("name");
-  std::for_each(temp->begin(),
-                temp->end(), [this](std::string value)
+  *replyData = this->_network_manager->getReply("name");
+  std::for_each(replyData->begin(),
+                replyData->end(), [this](std::string value)
   {
     this->_subtask.addItem(value.data());
   });
-  delete temp;
+  delete replyData;
 }
 
 
 void Task::SlotEditButton(){
+//TODO: кликабельный список исполнителей и подзадач, чтобы применялось и сохранялось в БД
   if (this->_editButton.text() == "Edit")  {
       this->_description.setVisible(false);
 
@@ -130,5 +140,6 @@ void Task::SlotEditButton(){
 
 Task::~Task()
 {
-  delete this->_network_manager;
+  if (this->_network_manager != nullptr)
+    delete this->_network_manager;
 }

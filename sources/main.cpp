@@ -1,7 +1,7 @@
 ﻿#include "includes/mainwindow.h"
 #include <QApplication>
 
-#include "../includes/task.h"
+#include "../includes/Project.h"
 #include "../includes/network.h"
 
 int main(int argc, char *argv[])
@@ -10,8 +10,8 @@ int main(int argc, char *argv[])
 
     Network ntwrk;
 
-    Task task("imya");
-    task.show();
+    MainWindow mainwindow;
+    mainwindow.show();
 
     return a.exec();
 }
