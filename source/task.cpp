@@ -1,18 +1,19 @@
 ﻿#include "../include/task.h"
 #include "../include/network.h"
 
-Task::Task()
+Task::Task(QWidget* parent): QWidget(parent)
 {
   this->network = nullptr;
 }
 
-Task::Task(QString name, Network* network) : network(network), name(name)
+Task::Task(QWidget* parent, QString name, Network* network) : QWidget(parent), network(network), name(name)
 {
   this->setWindowTitle(this->name);
   this->setMinimumSize(400, 250);
 
   connect(&(this->editButton), &QPushButton::clicked, this, &Task::SlotEditButton);
   connect(this->network, &Network::readFinished, this, &Task::getReply);
+  connect(&(this->BBack), &QPushButton::clicked, this, &Task::back);
 
   //Элементы для изменения задачи
   this->dateEdit.setReadOnly(false);
@@ -41,6 +42,7 @@ Task::Task(QString name, Network* network) : network(network), name(name)
   this->description.setBaseSize(200, 50);
 
   this->editButton.setText("Edit");
+  this->BBack.setText("Back");
 
   //Добавим виджеты на экран
   this->layout.setSpacing(10);
@@ -50,6 +52,7 @@ Task::Task(QString name, Network* network) : network(network), name(name)
   this->layout.addWidget(&(this->employee));
   this->layout.addWidget(&(this->subtask));
   this->layout.addWidget(&(this->nameEdit));
+  this->layout.addWidget(&(this->BBack));
   this->layout.addWidget(&(this->editButton), 3, 2, Qt::AlignLeft);
   this->layout.addWidget(&(this->targetEdit), 0, 1, Qt::AlignLeft);
   this->layout.addWidget(&(this->descriptionEdit), 1, 0, Qt::AlignLeft);
@@ -62,7 +65,7 @@ Task::Task(QString name, Network* network) : network(network), name(name)
 
 
 void Task::SlotEditButton(){
-//TODO: кликабельный список исполнителей и подзадач, чтобы применялось и сохранялось в БД
+  //TODO: кликабельный список исполнителей и подзадач, чтобы применялось и сохранялось в БД
   if (this->editButton.text() == "Edit")  {
       this->description.setVisible(false);
 
@@ -71,6 +74,7 @@ void Task::SlotEditButton(){
       this->dateEdit.setVisible(true);
       this->nameEdit.setVisible(true);
 
+      this->target.setVisible(false);
       this->subtask.setVisible(false);
       this->employee.setVisible(false);
       this->editButton.setText("Save");
@@ -85,10 +89,10 @@ void Task::SlotEditButton(){
         }
 
       if (this->dateEdit.date() != QDate::fromString(this->date.text(), Qt::ISODate) && this->dateEdit.text() != "")
-      {
+        {
           this->setDate(this->dateEdit.date());
           this->network->changeDate(this->name, this->date.text()); // крашится на этом моменте
-      }
+        }
 
       if (this->nameEdit.text() != "" && this->nameEdit.text() != this->name)
         {
@@ -97,16 +101,17 @@ void Task::SlotEditButton(){
         }
 
 
-       this->description.setVisible(true);
+      this->description.setVisible(true);
 
-       this->descriptionEdit.setVisible(false);
-       this->targetEdit.setVisible(false);
-       this->dateEdit.setVisible(false);
-       this->nameEdit.setVisible(false);
+      this->descriptionEdit.setVisible(false);
+      this->targetEdit.setVisible(false);
+      this->dateEdit.setVisible(false);
+      this->nameEdit.setVisible(false);
 
-       this->subtask.setVisible(true);
-       this->employee.setVisible(true);
-       this->editButton.setText("Edit");
+      this->target.setVisible(true);
+      this->subtask.setVisible(true);
+      this->employee.setVisible(true);
+      this->editButton.setText("Edit");
     }//else
 }
 
@@ -130,42 +135,50 @@ void Task::getReply()
   this->network->unpackReply("name");
 }
 
-  void Task::setName(QString newName)
-  {
-    this->name = newName;
-  }
+void Task::setName(QString newName)
+{
+  this->name = newName;
+}
 
-  void Task::setDate(QDate newDate)
-  {
-    this->date.setText(newDate.toString(Qt::ISODate));
-    this->dateEdit.setDate(newDate);
-  }
+void Task::setDate(QDate newDate)
+{
+  this->date.setText(newDate.toString(Qt::ISODate));
+  this->dateEdit.setDate(newDate);
+}
 
-  void Task::setDescription(QString newDescription)
-  {
-    this->description.setPlainText(newDescription);
-  }
+void Task::setDescription(QString newDescription)
+{
+  this->description.setPlainText(newDescription);
+}
 
-  void Task::setEmployee(QVector<QString> employees)
-  {
-    if (!(employees.isEmpty()))
-      this->employee.addItems(employees.toList());
-  }
+void Task::setEmployee(QVector<QString> employees)
+{
+  if (!(employees.isEmpty()))
+    this->employee.addItems(employees.toList());
+}
 
-  void Task::setSubtask(QVector<QString> subtasks)
-  {
-    if (!(subtasks.isEmpty()))
-      this->subtask.addItems(subtasks.toList());
-  }
+void Task::setSubtask(QVector<QString> subtasks)
+{
+  if (!(subtasks.isEmpty()))
+    this->subtask.addItems(subtasks.toList());
+}
 
-  void Task::setNetwork(Network* network)
-  {
-    if (this->network != nullptr)
-      delete this->network;
-    this->network = network;
-  }
+void Task::setNetwork(Network* network)
+{
+  if (this->network != nullptr)
+    delete this->network;
+  this->network = network;
+}
 
-  void Task::setTarget(QString newTarget)
-  {
-    this->target.setText(newTarget);
-  }
+void Task::setTarget(QString newTarget)
+{
+  this->target.setText(newTarget);
+}
+
+void Task::back()
+{
+  qDebug() << "task back";
+  disconnect(this->network, &Network::readFinished, this, &Task::getReply);
+  this->close();
+  emit this->showProject();
+}

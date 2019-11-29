@@ -14,6 +14,7 @@ class Project : public QWidget
   QHBoxLayout layout;
   Task *task;
   QPushButton editButton;
+  QPushButton BBack;
   QListWidget taskList;
 
   //EDIT
@@ -24,8 +25,9 @@ class Project : public QWidget
   QVBoxLayout LGroupBox;
 
 public:
-  Project();
-  Project(QString name, Network* manager);
+  Project(QWidget* parent = nullptr);
+  Project(QWidget* parent = nullptr, QString name = "", Network* manager = nullptr);
+  Project(const Project& copy);
   ~Project();
   void hideAll();
   void edit();
@@ -34,6 +36,11 @@ public:
 public slots:
   void getReply();
   void openTask(QListWidgetItem *item);
+  void taskClosed();
+  void back();
+
+signals:
+  void showMainWindow();
 };
 
 #endif // PROJECT_H

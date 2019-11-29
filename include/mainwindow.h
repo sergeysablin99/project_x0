@@ -23,7 +23,7 @@ class MainWindow : public QWidget
   QLineEdit newProjectName;
 
 public:
-  MainWindow(QWidget *parent = nullptr);
+  MainWindow();
   ~MainWindow();
   void hideAll();
 
@@ -33,6 +33,7 @@ public slots:
   void createProject();
   void deleteProject();
   void getReply();
+  void projectClosed();
   void openProject(QListWidgetItem* projectName);
 };
 #endif // MAINWINDOW_H

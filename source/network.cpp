@@ -39,7 +39,6 @@ void Network::slotReadyRead(QNetworkReply *reply)
       if (this->emptyJson(jsonReply))
         {
           qDebug() << "Push reply buffer: " << jsonReply.dump().data();
-          qDebug() << "exit";
           this->replyBuffer.push_back(jsonReply);
         }
 
@@ -342,7 +341,7 @@ void Network::changeName(QString task, QString newName)
 
   QString request_command = QString(R"({"statements":[{"statement":")");
 
-  request_command.append("MATCH (t:Task {name: '" + task + "'}) SET t.name = '" + newName + "'");
+  request_command.append("MATCH (t:Task {name: '" + task + "'}) SET t.name = '" + newName + "' RETURN t");
 
   request_command.append(R"("}]})");
 
@@ -359,7 +358,7 @@ void Network::changeTarget(QString task, QString newTarget)
 
   QString request_command = QString(R"({"statements":[{"statement":")");
 
-  request_command.append("MATCH (t:Task {name: '" + task + "'}) SET t.target = '" + newTarget + "'");
+  request_command.append("MATCH (t:Task {name: '" + task + "'}) SET t.target = '" + newTarget + "' RETURN t");
 
   request_command.append(R"("}]})");
 
@@ -376,7 +375,7 @@ void Network::changeDescription(QString task, QString newDescription)
 
   QString request_command = QString(R"({"statements":[{"statement":")");
 
-  request_command.append("MATCH (t:Task {name: '" + task + "'}) SET t.description = '" + newDescription + "'");
+  request_command.append("MATCH (t:Task {name: '" + task + "'}) SET t.description = '" + newDescription + "' RETURN t");
 
   request_command.append(R"("}]})");
 

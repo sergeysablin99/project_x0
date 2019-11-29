@@ -1,7 +1,6 @@
 ﻿#include "../include/mainwindow.h"
 
-MainWindow::MainWindow(QWidget *parent)
-  : QWidget(parent), project(nullptr)
+MainWindow::MainWindow() : project(nullptr)
 {
   connect(&(this->network), &Network::readFinished, this, &MainWindow::getReply);
   connect(&(this->mainBBack), &QPushButton::clicked, this, &MainWindow::showMainPage);
@@ -10,6 +9,17 @@ MainWindow::MainWindow(QWidget *parent)
   connect(&(this->LWProjects), &QListWidget::itemDoubleClicked, this, &MainWindow::openProject);
 
   this->mainBBack.setText("Back");
+  this->mainBBack.setHidden(true);
+
+//  this->LGroupBox.setParent(this);
+//  this->mainBBack.setParent(this);
+//  this->BCreateProject.setParent(this);
+//  this->BDeleteProject.setParent(this);
+//  this->LWProjects.setParent(this);
+//  this->GBCheckBox.setParent(this);
+//  this->LCheckBox.setParent(this);
+//  this->newProjectName.setParent(this);
+
   this->BCreateProject.setText("Create project");
   this->BDeleteProject.setText("Delete project");
 
@@ -37,6 +47,7 @@ void MainWindow::getReply()//вынести "create" часть вотдельн
 
   this->network.unpackReply("name");
   this->LWProjects.addItems(this->network.returnReply().toList());
+  qDebug() << LWProjects.item(0);
 
   for (auto item:VCheckBox)
     delete item;
@@ -68,8 +79,7 @@ void MainWindow::showMainPage()
 {
   for (int counter = 0; counter < this->LMain.count(); counter++)
     {
-      if (counter != this->LMain.indexOf(&(this->mainBBack)) &&
-          counter != this->LMain.indexOf(&(this->BCreateProject)) &&
+      if (counter != this->LMain.indexOf(&(this->BCreateProject)) &&
           counter != this->LMain.indexOf(&(this->BDeleteProject)) &&
           counter != this->LMain.indexOf(&(this->LWProjects)))
         {
@@ -84,8 +94,6 @@ void MainWindow::showMainPage()
   this->BDeleteProject.setText("Delete project");
   this->BCreateProject.setText("Create project");
 
-  if (this->mainBBack.isHidden())
-    this->mainBBack.setVisible(true);
   if (this->BCreateProject.isHidden())
     this->BCreateProject.setVisible(true);
   if(this->BDeleteProject.isHidden())
@@ -202,10 +210,24 @@ void MainWindow::deleteProject()
 void MainWindow::openProject (QListWidgetItem* projectName)
 {
   disconnect(&(this->network), &Network::readFinished, this, &MainWindow::getReply);
-  if (this->project != nullptr)
-    delete this->project;
-  this->project = new Project(projectName->text(), &(this->network));
+//  if (this->project != nullptr)
+//    {
+//      delete this->project;
+//      this->project = nullptr;
+//    }
+
+  this->project = new Project(this, projectName->text(), &(this->network));
+  connect(this->project, &Project::showMainWindow, this, &MainWindow::projectClosed);
+
   this->hideAll();
   this->LMain.addWidget(this->project);
   this->project->show();
+}
+
+void MainWindow::projectClosed()
+{
+  qDebug() << "project closed";
+  connect(&(this->network), &Network::readFinished, this, &MainWindow::getReply);
+
+  this->showMainPage();
 }

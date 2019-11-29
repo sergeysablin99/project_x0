@@ -33,6 +33,7 @@ class Task : public QWidget
   QListWidget subtask;
   QGridLayout layout;
   QPushButton editButton;
+  QPushButton BBack;
 
   //Edit
   QLineEdit nameEdit;
@@ -41,8 +42,8 @@ class Task : public QWidget
   QDateEdit dateEdit;
 
 public:
-  Task();
-  Task(QString name, Network* manager);
+  Task(QWidget* parent = nullptr);
+  Task(QWidget* parent = nullptr, QString name = "", Network* manager = nullptr);
 //  void updateEmployee(QListWidget *list);
 //  void updateSubtask(QListWidget *list);
   ~Task();
@@ -59,6 +60,10 @@ public:
 public slots:
   void SlotEditButton();
   void getReply();
+  void back();
+
+signals:
+  void showProject();
 };
 
 #endif // TASK_H

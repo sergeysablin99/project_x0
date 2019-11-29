@@ -1,18 +1,20 @@
 ﻿#include "../include/Project.h"
 
-Project::Project()
+Project::Project(QWidget* parent) : QWidget(parent)
 {
   this->network = nullptr;
   //  this->task = nullptr;
 }
 
-Project::Project(QString name, Network* manager): name(name), network(manager), task(nullptr)
+Project::Project(QWidget* parent, QString name, Network* manager): QWidget(parent), name(name), network(manager), task(nullptr)
 {
   connect(&(this->taskList), &QListWidget::itemActivated, this, &Project::openTask);
   connect(&(this->editButton), &QPushButton::clicked, this, &Project::edit);
   connect(this->network, &Network::readFinished, this, &Project::getReply);
+  connect(&(this->BBack), &QPushButton::clicked, this, &Project::back);
 
   this->editButton.setText("Edit project");
+  this->BBack.setText("Back");
 
   this->setName.setHidden(true);
   this->setName.setPlaceholderText(this->name);
@@ -22,7 +24,7 @@ Project::Project(QString name, Network* manager): name(name), network(manager), 
   //Добавим виджеты на экран
   this->layout.addWidget(&(this->taskList));
   this->layout.addWidget(&(this->editButton));
-  //  this->layout.addWidget(&(this->setName));
+  this->layout.addWidget(&(this->BBack));
   this->layout.addWidget(&(this->GBCheckBox));
   this->setLayout(&(this->layout));
 
@@ -66,16 +68,20 @@ void Project::edit()
     }
 }
 
-  void Project::openTask (QListWidgetItem *taskName)
-  {
-    disconnect(this->network, &Network::readFinished, this, &Project::getReply);
-    this->hideAll();
-    if (this->task != nullptr)
-      delete this->task;
-    this->task = new Task(taskName->text(), this->network);
-    this->layout.addWidget(this->task);
-    this->task->show();
-  }
+void Project::openTask (QListWidgetItem *taskName)
+{
+  disconnect(this->network, &Network::readFinished, this, &Project::getReply);
+  this->hideAll();
+
+//  if (this->task != nullptr)
+//    delete this->task;
+
+  this->task = new Task(this, taskName->text(), this->network);
+  connect(this->task, &Task::showProject, this, &Project::taskClosed);
+
+  this->layout.addWidget(this->task);
+  this->task->show();
+}
 
   Project::~Project()
   {
@@ -89,6 +95,7 @@ void Project::edit()
 
     this->network->unpackReply("name");
     QStringList checkList = this->network->returnReply().toList();
+    qDebug() << checkList;
 
     if (this->layout.indexOf(&(this->taskList)) == -1)
       {
@@ -143,11 +150,12 @@ void Project::edit()
     for (int counter = 0; counter < this->layout.count(); counter++)
       {
         if (counter != this->layout.indexOf(&(this->editButton)) &&
-            counter != this->layout.indexOf(&(this->taskList)))
+            counter != this->layout.indexOf(&(this->taskList)) &&
+            counter != this->layout.indexOf(&(this->BBack)))
           {
             if (this->layout.itemAt(counter)->widget())
               {
-                this->layout.itemAt(counter)->widget()->setHidden (true);
+                this->layout.itemAt(counter)->widget()->setHidden(true);
               }
           }//if
       }
@@ -158,6 +166,48 @@ void Project::edit()
       this->taskList.setVisible(true);
     if (this->editButton.isHidden())
       this->editButton.setVisible(true);
+    if (this->BBack.isHidden())
+      this->BBack.setVisible(true);
+
     qDebug() << "Show MainPage";
     this->network->getTasks(this->name);
   }
+
+void Project::taskClosed()
+{
+qDebug() << "taskClosed";
+  connect(this->network, &Network::readFinished, this, &Project::getReply);
+  this->showMainPage();
+}
+
+void Project::back()
+{
+  disconnect(this->network, &Network::readFinished, this, &Project::getReply);
+  this->close();
+  emit this->showMainWindow();
+}
+
+Project::Project(const Project& copy): name(copy.name), network(copy.network), task(copy.task)
+{
+  connect(&(this->taskList), &QListWidget::itemActivated, this, &Project::openTask);
+  connect(&(this->editButton), &QPushButton::clicked, this, &Project::edit);
+  connect(this->network, &Network::readFinished, this, &Project::getReply);
+  connect(&(this->BBack), &QPushButton::clicked, this, &Project::back);
+
+  this->editButton.setText("Edit project");
+  this->BBack.setText("Back");
+
+  this->setName.setHidden(true);
+  this->setName.setPlaceholderText(this->name);
+
+  this->GBCheckBox.setHidden(true);
+
+  //Добавим виджеты на экран
+  this->layout.addWidget(&(this->taskList));
+  this->layout.addWidget(&(this->editButton));
+  this->layout.addWidget(&(this->BBack));
+  this->layout.addWidget(&(this->GBCheckBox));
+  this->setLayout(&(this->layout));
+
+  this->showMainPage();
+}
