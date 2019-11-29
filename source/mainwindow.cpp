@@ -1,6 +1,6 @@
 ﻿#include "../include/mainwindow.h"
 
-MainWindow::MainWindow() : project(nullptr)
+MainWindow::MainWindow() //: project(nullptr)
 {
   connect(&(this->network), &Network::readFinished, this, &MainWindow::getReply);
   connect(&(this->mainBBack), &QPushButton::clicked, this, &MainWindow::showMainPage);
@@ -11,15 +11,6 @@ MainWindow::MainWindow() : project(nullptr)
   this->mainBBack.setText("Back");
   this->mainBBack.setHidden(true);
 
-//  this->LGroupBox.setParent(this);
-//  this->mainBBack.setParent(this);
-//  this->BCreateProject.setParent(this);
-//  this->BDeleteProject.setParent(this);
-//  this->LWProjects.setParent(this);
-//  this->GBCheckBox.setParent(this);
-//  this->LCheckBox.setParent(this);
-//  this->newProjectName.setParent(this);
-
   this->BCreateProject.setText("Create project");
   this->BDeleteProject.setText("Delete project");
 
@@ -29,18 +20,13 @@ MainWindow::MainWindow() : project(nullptr)
   this->LMain.addWidget(&(this->BCreateProject));
   this->LMain.addWidget(&(this->BDeleteProject));
   this->LMain.addWidget(&(this->GBCheckBox));
-  this->setLayout(&(this->LMain));
-
-  this->LCheckBox.setContentsMargins(10, 10, 10, 10);
-
   this->LMain.addWidget(&(this->LWProjects));
-  this->LGroupBox.addLayout(&(this->LCheckBox));
-  this->GBCheckBox.setLayout(&(this->LGroupBox));
+  this->setLayout(&(this->LMain));
 
   this->showMainPage();
 }
 
-void MainWindow::getReply()//вынести "create" часть вотдельный метод
+void MainWindow::getReply()
 {
   qDebug() << "start of getReply";
   this->LWProjects.clear();
@@ -65,10 +51,18 @@ void MainWindow::getReply()//вынести "create" часть вотдельн
       this->VCheckBox.push_back(newObject);
       this->LCheckBox.addWidget(this->VCheckBox[this->VCheckBox.indexOf(newObject)]);
     }
+
+  if (LGroupBox.indexOf(&(this->LCheckBox)) == -1)
+    {
+      this->LGroupBox.addLayout(&(this->LCheckBox));
+      this->GBCheckBox.setLayout(&(this->LGroupBox));
+      this->LCheckBox.setContentsMargins(10, 10, 10, 10);
+    }
 }
 
 MainWindow::~MainWindow()
 {
+//  this->LCheckBox.deleteLater();
   for (auto item:VCheckBox)
     delete item;
   if (this->project != nullptr)
@@ -210,11 +204,6 @@ void MainWindow::deleteProject()
 void MainWindow::openProject (QListWidgetItem* projectName)
 {
   disconnect(&(this->network), &Network::readFinished, this, &MainWindow::getReply);
-//  if (this->project != nullptr)
-//    {
-//      delete this->project;
-//      this->project = nullptr;
-//    }
 
   this->project = new Project(this, projectName->text(), &(this->network));
   connect(this->project, &Project::showMainWindow, this, &MainWindow::projectClosed);
@@ -230,4 +219,12 @@ void MainWindow::projectClosed()
   connect(&(this->network), &Network::readFinished, this, &MainWindow::getReply);
 
   this->showMainPage();
+}
+
+void MainWindow::debugParents()
+{
+  for (int counter = 0; counter < this->LMain.count(); counter++)
+    {
+      qDebug() << this->LMain.itemAt(counter)->widget() << "Parent: " << this->LMain.itemAt(counter)->widget()->parent();
+    }
 }

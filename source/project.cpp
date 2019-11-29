@@ -73,9 +73,6 @@ void Project::openTask (QListWidgetItem *taskName)
   disconnect(this->network, &Network::readFinished, this, &Project::getReply);
   this->hideAll();
 
-//  if (this->task != nullptr)
-//    delete this->task;
-
   this->task = new Task(this, taskName->text(), this->network);
   connect(this->task, &Task::showProject, this, &Project::taskClosed);
 

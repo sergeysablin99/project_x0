@@ -26,10 +26,10 @@ public:
   MainWindow();
   ~MainWindow();
   void hideAll();
+  void debugParents();
 
 public slots:
   void showMainPage();
-//  void showProject();
   void createProject();
   void deleteProject();
   void getReply();
