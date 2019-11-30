@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include "Project.h"
+#include "user.h"
 
 class MainWindow : public QWidget
 {
@@ -22,6 +23,12 @@ class MainWindow : public QWidget
   QPushButton BCreateProject;
   QLineEdit newProjectName;
 
+  //LOGIN
+  User user;
+  QLineEdit login;
+  QLineEdit password;
+  QPushButton BConfirm;
+
 public:
   MainWindow();
   ~MainWindow();
@@ -34,5 +41,7 @@ public slots:
   void getReply();
   void projectClosed();
   void openProject(QListWidgetItem* projectName);
+  void sendLogin();
+  void loggedIn();
 };
 #endif // MAINWINDOW_H

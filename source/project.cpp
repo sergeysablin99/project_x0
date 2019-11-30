@@ -60,13 +60,13 @@ void Project::edit()
           this->name = this->setName.text();
       }
 
-      for (auto task:this->VCheckBox){
-          if (task->isChecked())
+      for (auto task:this->VCheckBox)
+      {
+          if (!this->checkedTasks.contains(task->text()) && task->isChecked())
             this->network->addTask(task->text(), this->name);
           else
-            {
+            if (this->checkedTasks.contains(task->text()) && !task->isChecked())
               this->network->deleteTask(task->text(), this->name);
-            }
         }
 
       this->setName.setHidden(true);
@@ -122,6 +122,7 @@ void Project::getReply()
           if (this->taskList.item(task)->text() == checkList.at(taskIndex))
             {
               newObject->setCheckState(Qt::Checked);
+              this->checkedTasks.append(newObject->text());
               break;
             }
 
@@ -215,7 +216,7 @@ Project::Project(const Project& copy): name(copy.name), network(copy.network), t
   this->showMainPage();
 }
 
-void Project::createTask()
+void Project::createTask() // добавить ввод описания и цели и список работников
 {
   if (this->BCreateTask.text() == "Create new task")
     {

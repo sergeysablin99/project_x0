@@ -25,6 +25,7 @@ class Project : public QWidget
   QVBoxLayout LCheckBox;
   QVBoxLayout LGroupBox;
   QLineEdit newTaskName;
+  QStringList checkedTasks;
 
 public:
   Project(QWidget* parent = nullptr);

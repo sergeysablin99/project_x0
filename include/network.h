@@ -24,7 +24,7 @@ public:
   void getProjects();
   void getTasks(const QString projectName = "");
   void getEmployee(QString taskName = "");
-//  QString login(const QString login, const QString password);
+  void login(const QString login, const QString password);
   void deleteProject(const QString projectName);
   void createProject(const QString projectName, const QStringList & tasks);
   void deleteTask(const QString taskName, const QString projectName = "");
@@ -62,11 +62,13 @@ public:
 public slots:
   void slotReadyRead(QNetworkReply *reply);
   void slotReadyWrite();
+  void slotAuth(QNetworkReply *reply);
 
 signals:
   void readFinished();
   void returnEmployee();
   void returnSubtasks();
+  void loggedIn();
 };
 
 #endif // NETWORK_H

@@ -2,8 +2,9 @@
 
 Network::Network()
 {
-  connect(&(this->networkManager), &QNetworkAccessManager::finished, this, &Network::slotReadyRead);
+//  connect(&(this->networkManager), &QNetworkAccessManager::finished, this, &Network::slotReadyRead);
 //  connect(&(this->networkManager), &QNetworkAccessManager::finished, this, &Network::slotReadyWrite);
+  connect(&(this->networkManager), &QNetworkAccessManager::finished, this, &Network::slotAuth);
   this->serverAddress = "http://localhost:7474/db/data/transaction/commit";
   this->bufferDynamic = false;
 }
@@ -519,4 +520,29 @@ void Network::deleteSubtask(QString subtaskName, QString taskName)
     this->slotReadyWrite();
 
   delete request;
+}
+
+void Network::login(const QString login, const QString password)
+{
+  QNetworkRequest *request = new QNetworkRequest(QUrl(this->serverAddress));
+
+  request->setRawHeader ("Accept", "application/json; charset=UTF-8");
+  request->setRawHeader ("Authorization", "Basic "  + (login + ":" + password).toUtf8().toBase64());
+
+  this->networkManager.get(*request)->readAll();
+
+  delete request;
+}
+
+void Network::slotAuth(QNetworkReply *reply)
+{
+
+  if (reply->readAll() == "")
+    {
+      disconnect(&(this->networkManager), &QNetworkAccessManager::finished, this, &Network::slotAuth);
+      connect(&(this->networkManager), &QNetworkAccessManager::finished, this, &Network::slotReadyRead);
+      connect(&(this->networkManager), &QNetworkAccessManager::finished, this, &Network::slotReadyWrite);
+      this->bufferDynamic = false;
+      emit this->loggedIn();
+    }
 }

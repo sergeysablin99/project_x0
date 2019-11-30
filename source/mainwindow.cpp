@@ -2,28 +2,41 @@
 
 MainWindow::MainWindow() : project(nullptr)
 {
-  connect(&(this->network), &Network::readFinished, this, &MainWindow::getReply);
-  connect(&(this->mainBBack), &QPushButton::clicked, this, &MainWindow::showMainPage);
-  connect(&(this->BCreateProject), &QPushButton::clicked, this, &MainWindow::createProject);
-  connect(&(this->BDeleteProject), &QPushButton::clicked, this, &MainWindow::deleteProject);
-  connect(&(this->LWProjects), &QListWidget::itemDoubleClicked, this, &MainWindow::openProject);
+//  connect(&(this->network), &Network::readFinished, this, &MainWindow::getReply);
+//  connect(&(this->mainBBack), &QPushButton::clicked, this, &MainWindow::showMainPage);
+//  connect(&(this->BCreateProject), &QPushButton::clicked, this, &MainWindow::createProject);
+//  connect(&(this->BDeleteProject), &QPushButton::clicked, this, &MainWindow::deleteProject);
+//  connect(&(this->LWProjects), &QListWidget::itemDoubleClicked, this, &MainWindow::openProject);
 
-  this->mainBBack.setText("Back");
-  this->mainBBack.setHidden(true);
+//  this->mainBBack.setText("Back");
+//  this->mainBBack.setHidden(true);
 
-  this->BCreateProject.setText("Create project");
-  this->BDeleteProject.setText("Delete project");
+//  this->BCreateProject.setText("Create project");
+//  this->BDeleteProject.setText("Delete project");
 
-  this->GBCheckBox.setHidden(true);
+//  this->GBCheckBox.setHidden(true);
 
-  this->LMain.addWidget(&(this->mainBBack));
-  this->LMain.addWidget(&(this->BCreateProject));
-  this->LMain.addWidget(&(this->BDeleteProject));
-  this->LMain.addWidget(&(this->GBCheckBox));
-  this->LMain.addWidget(&(this->LWProjects));
+//  this->LMain.addWidget(&(this->mainBBack));
+//  this->LMain.addWidget(&(this->BCreateProject));
+//  this->LMain.addWidget(&(this->BDeleteProject));
+//  this->LMain.addWidget(&(this->GBCheckBox));
+//  this->LMain.addWidget(&(this->LWProjects));
+//  this->setLayout(&(this->LMain));
+
+//  this->showMainPage();
+
+  connect(&(this->network), &Network::loggedIn, this, &MainWindow::loggedIn);
+  connect(&(this->BConfirm), &QPushButton::clicked, this, &MainWindow::sendLogin);
+
+  this->BConfirm.setText("Confirm");
+  this->login.setPlaceholderText("Enter login");
+  this->password.setPlaceholderText("Enter password");
+  this->password.setEchoMode(QLineEdit::Password);
+
+  this->LMain.addWidget(&(this->login));
+  this->LMain.addWidget(&(this->password));
+  this->LMain.addWidget(&(this->BConfirm));
   this->setLayout(&(this->LMain));
-
-  this->showMainPage();
 }
 
 void MainWindow::getReply()
@@ -218,3 +231,43 @@ void MainWindow::projectClosed()
 }
 
 //Удалять векторы и удалять элементы лэйаутов, в которых лежат удаляемые данные
+
+void MainWindow::loggedIn()
+{
+  this->login.close();
+  this->password.close();
+  this->BConfirm.close();
+  this->LMain.removeWidget(&(this->BConfirm));
+  this->LMain.removeWidget(&(this->login));
+  this->LMain.removeWidget(&(this->password));
+
+  connect(&(this->network), &Network::readFinished, this, &MainWindow::getReply);
+  connect(&(this->mainBBack), &QPushButton::clicked, this, &MainWindow::showMainPage);
+  connect(&(this->BCreateProject), &QPushButton::clicked, this, &MainWindow::createProject);
+  connect(&(this->BDeleteProject), &QPushButton::clicked, this, &MainWindow::deleteProject);
+  connect(&(this->LWProjects), &QListWidget::itemDoubleClicked, this, &MainWindow::openProject);
+
+  this->mainBBack.setText("Back");
+  this->mainBBack.setHidden(true);
+
+  this->BCreateProject.setText("Create project");
+  this->BDeleteProject.setText("Delete project");
+
+  this->GBCheckBox.setHidden(true);
+
+  this->LMain.addWidget(&(this->mainBBack));
+  this->LMain.addWidget(&(this->BCreateProject));
+  this->LMain.addWidget(&(this->BDeleteProject));
+  this->LMain.addWidget(&(this->GBCheckBox));
+  this->LMain.addWidget(&(this->LWProjects));
+
+  this->showMainPage();
+}
+
+void MainWindow::sendLogin()
+{
+  if (!this->login.text().isEmpty() && !this->login.text().isEmpty())
+    this->user.login = this->login.text();
+    this->user.password = this->password.text();
+    this->network.login(this->login.text(), this->password.text());
+}
