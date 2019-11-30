@@ -1,6 +1,6 @@
 ﻿#include "../include/mainwindow.h"
 
-MainWindow::MainWindow() //: project(nullptr)
+MainWindow::MainWindow() : project(nullptr)
 {
   connect(&(this->network), &Network::readFinished, this, &MainWindow::getReply);
   connect(&(this->mainBBack), &QPushButton::clicked, this, &MainWindow::showMainPage);
@@ -28,12 +28,10 @@ MainWindow::MainWindow() //: project(nullptr)
 
 void MainWindow::getReply()
 {
-  qDebug() << "start of getReply";
   this->LWProjects.clear();
 
   this->network.unpackReply("name");
   this->LWProjects.addItems(this->network.returnReply().toList());
-  qDebug() << LWProjects.item(0);
 
   for (auto item:VCheckBox)
     delete item;
@@ -46,7 +44,6 @@ void MainWindow::getReply()
 
   for (int projectIndex = 0; projectIndex < this->LWProjects.count(); projectIndex++)
     {
-      qDebug() << "Push checkbox";
       QCheckBox *newObject = new QCheckBox(LWProjects.item(projectIndex)->text());
       this->VCheckBox.push_back(newObject);
       this->LCheckBox.addWidget(this->VCheckBox[this->VCheckBox.indexOf(newObject)]);
@@ -205,7 +202,7 @@ void MainWindow::openProject (QListWidgetItem* projectName)
 {
   disconnect(&(this->network), &Network::readFinished, this, &MainWindow::getReply);
 
-  this->project = new Project(this, projectName->text(), &(this->network));
+  this->project = new Project(nullptr, projectName->text(), &(this->network));
   connect(this->project, &Project::showMainWindow, this, &MainWindow::projectClosed);
 
   this->hideAll();
@@ -215,16 +212,9 @@ void MainWindow::openProject (QListWidgetItem* projectName)
 
 void MainWindow::projectClosed()
 {
-  qDebug() << "project closed";
   connect(&(this->network), &Network::readFinished, this, &MainWindow::getReply);
 
   this->showMainPage();
 }
 
-void MainWindow::debugParents()
-{
-  for (int counter = 0; counter < this->LMain.count(); counter++)
-    {
-      qDebug() << this->LMain.itemAt(counter)->widget() << "Parent: " << this->LMain.itemAt(counter)->widget()->parent();
-    }
-}
+//Удалять векторы и удалять элементы лэйаутов, в которых лежат удаляемые данные

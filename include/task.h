@@ -40,12 +40,19 @@ class Task : public QWidget
   QLineEdit targetEdit;
   QTextEdit descriptionEdit;
   QDateEdit dateEdit;
+  QGroupBox GBECheckBox;
+  QVector<QCheckBox *> VECheckBox;
+  QVBoxLayout LECheckBox;
+  QVBoxLayout LEGroupBox;
+
+  QGroupBox GBTCheckBox;
+  QVector<QCheckBox *> VTCheckBox;
+  QVBoxLayout LTCheckBox;
+  QVBoxLayout LTGroupBox;
 
 public:
   Task(QWidget* parent = nullptr);
   Task(QWidget* parent = nullptr, QString name = "", Network* manager = nullptr);
-//  void updateEmployee(QListWidget *list);
-//  void updateSubtask(QListWidget *list);
   ~Task();
 
   void setName(QString newName);
@@ -56,9 +63,12 @@ public:
   void setSubtask(QVector<QString>);
   void setNetwork(Network* network);
   void updateData(Task updateTask);
+  QListWidget* getSubtasks();
 
 public slots:
   void SlotEditButton();
+  void returnEmployee();
+  void returnSubtasks();
   void getReply();
   void back();
 

@@ -13,6 +13,8 @@ Task::Task(QWidget* parent, QString name, Network* network) : QWidget(parent), n
 
   connect(&(this->editButton), &QPushButton::clicked, this, &Task::SlotEditButton);
   connect(this->network, &Network::readFinished, this, &Task::getReply);
+  connect(this->network, &Network::returnEmployee, this, &Task::returnEmployee);
+  connect(this->network, &Network::returnSubtasks, this, &Task::returnSubtasks);
   connect(&(this->BBack), &QPushButton::clicked, this, &Task::back);
 
   //Элементы для изменения задачи
@@ -44,6 +46,9 @@ Task::Task(QWidget* parent, QString name, Network* network) : QWidget(parent), n
   this->editButton.setText("Edit");
   this->BBack.setText("Back");
 
+  this->GBECheckBox.setHidden(true);
+  this->GBTCheckBox.setHidden(true);
+
   //Добавим виджеты на экран
   this->layout.setSpacing(10);
   this->layout.addWidget(&(this->target), 0, 0, Qt::AlignLeft);
@@ -53,6 +58,8 @@ Task::Task(QWidget* parent, QString name, Network* network) : QWidget(parent), n
   this->layout.addWidget(&(this->subtask));
   this->layout.addWidget(&(this->nameEdit));
   this->layout.addWidget(&(this->BBack));
+  this->layout.addWidget(&(this->GBECheckBox));
+  this->layout.addWidget(&(this->GBTCheckBox));
   this->layout.addWidget(&(this->editButton), 3, 2, Qt::AlignLeft);
   this->layout.addWidget(&(this->targetEdit), 0, 1, Qt::AlignLeft);
   this->layout.addWidget(&(this->descriptionEdit), 1, 0, Qt::AlignLeft);
@@ -60,11 +67,13 @@ Task::Task(QWidget* parent, QString name, Network* network) : QWidget(parent), n
 
   this->setLayout(&(this->layout));
 
+  this->network->getEmployee(this->name);
+  this->network->tasksSubtasks(this->name);
   this->network->getTaskData(this->name);
 }
 
-
-void Task::SlotEditButton(){
+void Task::SlotEditButton()
+{
   //TODO: кликабельный список исполнителей и подзадач, чтобы применялось и сохранялось в БД
   if (this->editButton.text() == "Edit")  {
       this->description.setVisible(false);
@@ -73,11 +82,17 @@ void Task::SlotEditButton(){
       this->targetEdit.setVisible(true);
       this->dateEdit.setVisible(true);
       this->nameEdit.setVisible(true);
+      this->GBECheckBox.setVisible(true);
+      this->GBTCheckBox.setVisible(true);
 
+      this->BBack.setVisible(false);
       this->target.setVisible(false);
       this->subtask.setVisible(false);
       this->employee.setVisible(false);
       this->editButton.setText("Save");
+
+      this->network->getEmployee();
+      this->network->tasksSubtasks();
     } else {
       if (this->descriptionEdit.toPlainText() != "" && this->descriptionEdit.toPlainText() != this->description.toPlainText())
         {
@@ -100,6 +115,23 @@ void Task::SlotEditButton(){
           this->name = this->nameEdit.text();
         }
 
+      for (auto employee:this->VECheckBox){
+          if (employee->isChecked())
+            this->network->addEmployee(employee->text(), this->name);
+          else
+            {
+              this->network->deleteEmployee(employee->text(), this->name);
+            }
+        }
+
+      for (auto subtask:this->VTCheckBox){
+          if (subtask->isChecked())
+            this->network->addSubtask(subtask->text(), this->name);
+          else
+            {
+              this->network->deleteSubtask(subtask->text(), this->name);
+            }
+        }
 
       this->description.setVisible(true);
 
@@ -107,11 +139,18 @@ void Task::SlotEditButton(){
       this->targetEdit.setVisible(false);
       this->dateEdit.setVisible(false);
       this->nameEdit.setVisible(false);
+      this->GBECheckBox.setVisible(false);
+      this->GBTCheckBox.setVisible(false);
 
       this->target.setVisible(true);
       this->subtask.setVisible(true);
       this->employee.setVisible(true);
+      this->BBack.setVisible(true);
       this->editButton.setText("Edit");
+
+      this->network->getEmployee(this->name);
+      this->network->tasksSubtasks(this->name);
+      this->network->getTaskData(this->name);
     }//else
 }
 
@@ -127,12 +166,8 @@ void Task::getReply()
   this->setTarget(this->network->tasksTarget());
   this->setDescription(this->network->tasksDescription());
 
-  this->employee.clear();
-  this->setEmployee(this->network->tasksEmployee());
-
-  this->subtask.clear();
-  this->setSubtask(this->network->tasksSubtasks());
   this->network->unpackReply("name");
+  this->network->returnReply();
 }
 
 void Task::setName(QString newName)
@@ -179,6 +214,93 @@ void Task::back()
 {
   qDebug() << "task back";
   disconnect(this->network, &Network::readFinished, this, &Task::getReply);
+  disconnect(this->network, &Network::returnEmployee, this, &Task::returnEmployee);
+  disconnect(this->network, &Network::returnSubtasks, this, &Task::returnSubtasks);
   this->close();
   emit this->showProject();
+}
+
+void Task::returnEmployee()
+{
+qDebug() << "1";
+    this->network->unpackReply("name");
+    QStringList checkList = this->network->returnReply().toList();
+
+    for (auto item:VECheckBox)
+      delete item;
+    this->VECheckBox.clear();
+
+    QLayoutItem *child;
+    while ((child = this->LECheckBox.takeAt(0)) != nullptr) {
+        delete child;
+      }
+
+    for (int taskIndex = 0; taskIndex < checkList.count(); taskIndex++)
+      {
+        QCheckBox *newObject = new QCheckBox(checkList.at(taskIndex));
+
+        for (int item = 0; item < this->employee.count(); item++)
+          if (this->employee.item(item)->text() == checkList.at(taskIndex))
+            {
+              newObject->setCheckState(Qt::Checked);
+              break;
+            }
+
+        this->VECheckBox.push_back(newObject);
+        this->LECheckBox.addWidget(this->VECheckBox[this->VECheckBox.indexOf(newObject)]);
+      }
+
+    this->employee.clear();
+    this->employee.addItems(checkList);
+
+    if (this->LEGroupBox.indexOf(&(this->LECheckBox)) == -1)
+      this->LEGroupBox.addLayout(&(this->LECheckBox));
+    if (this->GBECheckBox.layout() == nullptr)
+      this->GBECheckBox.setLayout(&(this->LEGroupBox));
+}
+
+void Task::returnSubtasks()
+{
+  qDebug() << '2';
+  this->network->unpackReply("name");
+  QStringList checkList = this->network->returnReply().toList();
+
+  for (auto item:VTCheckBox)
+    delete item;
+  this->VTCheckBox.clear();
+
+  QLayoutItem *child;
+  while ((child = this->LTCheckBox.takeAt(0)) != nullptr) {
+      delete child;
+    }
+
+  for (int taskIndex = 0; taskIndex < checkList.count(); taskIndex++)
+    {
+      if (checkList.at(taskIndex) == this->name)
+        continue;
+      QCheckBox *newObject = new QCheckBox(checkList.at(taskIndex));
+
+      for (int item = 0; item < this->subtask.count(); item++)
+        if (this->subtask.item(item)->text() == checkList.at(taskIndex))
+          {
+            newObject->setCheckState(Qt::Checked);
+            break;
+          }
+
+      this->VTCheckBox.push_back(newObject);
+      this->LTCheckBox.addWidget(this->VTCheckBox[this->VTCheckBox.indexOf(newObject)]);
+    }
+
+  this->subtask.clear();
+  this->subtask.addItems(checkList);
+
+  if (this->LTGroupBox.indexOf(&(this->LTCheckBox)) == -1)
+    this->LTGroupBox.addLayout(&(this->LTCheckBox));
+  if (this->GBTCheckBox.layout() == nullptr)
+    this->GBTCheckBox.setLayout(&(this->LTGroupBox));
+}
+
+QListWidget* Task::getSubtasks()
+{
+  return &(this->subtask);
 }

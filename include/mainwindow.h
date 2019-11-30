@@ -26,7 +26,6 @@ public:
   MainWindow();
   ~MainWindow();
   void hideAll();
-  void debugParents();
 
 public slots:
   void showMainPage();

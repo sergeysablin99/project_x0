@@ -23,12 +23,17 @@ class Network : public QObject
 public:
   void getProjects();
   void getTasks(const QString projectName = "");
+  void getEmployee(QString taskName = "");
 //  QString login(const QString login, const QString password);
   void deleteProject(const QString projectName);
   void createProject(const QString projectName, const QStringList & tasks);
   void deleteTask(const QString taskName, const QString projectName = "");
   void addTask(const QString taskName, const QString projectName);
-  void createTask(const QString taskName);
+  void addEmployee(QString employee, QString taskName);
+  void deleteEmployee(QString employee, QString taskName);
+  void deleteSubtask(QString subtaskName, QString taskName);
+  void addSubtask(QString subtaskName, QString taskName);
+  void createTask(const QString taskName, const QStringList& tasks);
 
   void setServerAddress(QString newAddress);
   void unpackReply(QString param);
@@ -37,12 +42,13 @@ public:
   QVector<QString> returnReply();
   void getTaskData(QString taskName);
   bool emptyJson(nlohmann::json json);
+  int defineReply();
 
   QDate tasksDate();
   QString tasksTarget();
   QString tasksDescription();
   QVector<QString> tasksEmployee();
-  QVector<QString> tasksSubtasks();
+  void tasksSubtasks(QString taskName = "");
 
   void changeDate(QString task, QString newDate);
   void changeTarget(QString task, QString newTarget);
@@ -59,6 +65,8 @@ public slots:
 
 signals:
   void readFinished();
+  void returnEmployee();
+  void returnSubtasks();
 };
 
 #endif // NETWORK_H

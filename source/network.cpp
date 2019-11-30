@@ -3,7 +3,7 @@
 Network::Network()
 {
   connect(&(this->networkManager), &QNetworkAccessManager::finished, this, &Network::slotReadyRead);
-  connect(&(this->networkManager), &QNetworkAccessManager::finished, this, &Network::slotReadyWrite);
+//  connect(&(this->networkManager), &QNetworkAccessManager::finished, this, &Network::slotReadyWrite);
   this->serverAddress = "http://localhost:7474/db/data/transaction/commit";
   this->bufferDynamic = false;
 }
@@ -31,22 +31,29 @@ void Network::getTasks(const QString projectName)
 void Network::slotReadyRead(QNetworkReply *reply)
 {
   if (reply != nullptr){
-      auto rep = reply->readAll();
-      nlohmann::json jsonReply = nlohmann::json::parse(rep);
-
-
-
-      if (this->emptyJson(jsonReply))
-        {
-          qDebug() << "Push reply buffer: " << jsonReply.dump().data();
-          this->replyBuffer.push_back(jsonReply);
-        }
-
-      emit this->readFinished();
       if (this->requestBuffer.isEmpty())
         this->bufferDynamic = false;
       else
         this->bufferDynamic = true;
+
+      auto rep = reply->readAll();
+      nlohmann::json jsonReply = nlohmann::json::parse(rep);
+      qDebug() << "Response: " << jsonReply.dump().data();
+
+      if (this->emptyJson(jsonReply))
+        {
+          this->replyBuffer.push_back(jsonReply);
+
+          if (this->defineReply() == 1)
+            emit this->readFinished();
+          else
+            if (this->defineReply() == 0)
+              emit this->returnEmployee();
+          else
+              emit this->returnSubtasks();
+        }
+
+      emit this->slotReadyWrite();
 
       delete reply;
     }
@@ -55,7 +62,7 @@ void Network::slotReadyRead(QNetworkReply *reply)
 void Network::slotReadyWrite()
 {
       QEventLoop loop;
-      QTimer::singleShot(250, &loop, &QEventLoop::quit);
+      QTimer::singleShot(100, &loop, &QEventLoop::quit);
       loop.exec();
 
       if (!(this->requestBuffer.isEmpty()))
@@ -143,7 +150,7 @@ void Network::addTask(const QString taskName, const QString projectName)
   delete request;
 }
 
-void Network::createTask(const QString taskName)
+void Network::createTask(const QString taskName, const QStringList& tasks)
 {
   QNetworkRequest *request = prebuildRequest();
 
@@ -157,6 +164,11 @@ void Network::createTask(const QString taskName)
   this->requestBuffer.push_back(qMakePair(*request, request_command));
   if (this->bufferDynamic == false)
     this->slotReadyWrite();
+
+  for (const QString& task:tasks)
+    {
+      this->addSubtask(task, taskName);
+    }
 
   delete request;
 }
@@ -286,18 +298,24 @@ QVector<QString> Network::tasksEmployee()
   return employee;
 }
 
-QVector<QString> Network::tasksSubtasks()
+void Network::tasksSubtasks(QString taskName)
 {
-   QVector<QString> subtasks;
-   for (auto& iterator : this->replyBuffer.at(0).at("results")[0].at("data").items())
-      {
-        for(auto& it : iterator.key()){
-            std::string substring = iterator.value().at("row")[0].at("subtasks").dump();
-            if (!(substring.empty()))
-              subtasks.push_back(substring.substr(1, substring.size()  - 2).data());
-          }
-      }//for
-   return subtasks;
+  QNetworkRequest *request = prebuildRequest();
+
+  QString request_command = QString(R"({"statements":[{"statement":")");
+
+  if (taskName == "")
+    request_command.append("MATCH (t1:Task) RETURN t1");
+  else
+    request_command.append("MATCH (t1:Task)-[:LINKED]-(t:Task {name: '" + taskName + "'}) RETURN t1");
+
+  request_command.append(R"("}]})");
+
+  this->requestBuffer.push_back(qMakePair(*request, request_command));
+  if (this->bufferDynamic == false)
+    this->slotReadyWrite();
+
+  delete request;
 }
 
 void Network::getTaskData(QString taskName)
@@ -386,11 +404,119 @@ void Network::changeDescription(QString task, QString newDescription)
   delete request;
 }
 
-
 bool Network::emptyJson(nlohmann::json json)
 {
   if (json.at("results")[0].at("data")[0].is_null())
     return false;
   else
     return true;
+}
+
+int Network::defineReply()
+{
+  QString replyType = this->replyBuffer.at(0).at("results")[0].at("columns")[0].dump().
+      substr(1, this->replyBuffer.at(0).at("results")[0].at("columns")[0].dump().size()- 2).data();
+
+  if (replyType == "e")
+    return 0;
+  else
+    if (replyType == "t1")
+      return 2;
+  else
+      return 1;
+}
+
+void Network::getEmployee(QString taskName)
+{
+  QNetworkRequest *request = prebuildRequest();
+
+  QString request_command = QString(R"({"statements":[{"statement":")");
+
+  if (taskName == "")
+    request_command.append("MATCH (e:Employee) RETURN e");
+  else
+    request_command.append("MATCH (e:Employee)-[:WORKS_AT]->(:Task {name:'" + taskName + "'}) RETURN e");
+
+  request_command.append(R"("}]})");
+
+  this->requestBuffer.push_back(qMakePair(*request, request_command));
+  if (this->bufferDynamic == false)
+    this->slotReadyWrite();
+
+  delete request;
+}
+
+void Network::deleteEmployee(QString employee, QString taskName)
+{
+  QNetworkRequest *request = prebuildRequest();
+
+  QString request_command = QString(R"({"statements":[{"statement":")");
+
+  request_command.append("MATCH (t:Task {name : '" + taskName + "'})<-[r:WORKS_AT]-"
+                                                                        "(e:Employee {name:'" + employee + "'}) DELETE r");
+  request_command.append(R"("}]})");
+
+
+  this->requestBuffer.push_back(qMakePair(*request, request_command));
+  if (this->bufferDynamic == false)
+    this->slotReadyWrite();
+
+  delete request;
+}
+
+void Network::addEmployee(QString employee, QString taskName)
+{
+  QNetworkRequest *request = prebuildRequest();
+
+  QString request_command = QString(R"({"statements":[{"statement":")");
+
+  request_command.append("MATCH (t:Task {name:'" + taskName + "'}),"
+                         "(e:Employee {name:'" + employee + "'}) MERGE (e)-[r:WORKS_AT]->(t)");
+
+  request_command.append(R"("}]})");
+
+
+  this->requestBuffer.push_back(qMakePair(*request, request_command));
+  if (this->bufferDynamic == false)
+    this->slotReadyWrite();
+
+  delete request;
+}
+
+void Network::addSubtask(QString subtaskName, QString taskName)
+{
+  QNetworkRequest *request = prebuildRequest();
+
+  QString request_command = QString(R"({"statements":[{"statement":")");
+
+  request_command.append("MATCH (t:Task {name:'" + taskName + "'}),"
+                         "(t1:Task {name:'" + subtaskName + "'}) MERGE (t1)-[:LINKED]-(t)");
+
+  request_command.append(R"("}]})");
+
+
+  this->requestBuffer.push_back(qMakePair(*request, request_command));
+  if (this->bufferDynamic == false)
+    this->slotReadyWrite();
+
+  delete request;
+}
+
+void Network::deleteSubtask(QString subtaskName, QString taskName)
+{
+  QNetworkRequest *request = prebuildRequest();
+
+  QString request_command = QString(R"({"statements":[{"statement":")");
+
+  request_command.append("MATCH (t:Task {name:'" + taskName + "'})-[r:LINKED]-"
+                         "(t1:Task {name:'" + subtaskName + "'}) DELETE r");
+
+  request_command.append(R"("}]})");
+
+
+  this->requestBuffer.push_back(qMakePair(*request, request_command));
+  if (this->bufferDynamic == false)
+    this->slotReadyWrite();
+
+  delete request;
 }

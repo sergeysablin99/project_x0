@@ -15,6 +15,7 @@ class Project : public QWidget
   Task *task;
   QPushButton editButton;
   QPushButton BBack;
+  QPushButton BCreateTask;
   QListWidget taskList;
 
   //EDIT
@@ -23,6 +24,7 @@ class Project : public QWidget
   QLineEdit setName;
   QVBoxLayout LCheckBox;
   QVBoxLayout LGroupBox;
+  QLineEdit newTaskName;
 
 public:
   Project(QWidget* parent = nullptr);
@@ -37,6 +39,7 @@ public slots:
   void getReply();
   void openTask(QListWidgetItem *item);
   void taskClosed();
+  void createTask();
   void back();
 
 signals:
