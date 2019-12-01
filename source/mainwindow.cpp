@@ -2,40 +2,27 @@
 
 MainWindow::MainWindow() : project(nullptr)
 {
-//  connect(&(this->network), &Network::readFinished, this, &MainWindow::getReply);
-//  connect(&(this->mainBBack), &QPushButton::clicked, this, &MainWindow::showMainPage);
-//  connect(&(this->BCreateProject), &QPushButton::clicked, this, &MainWindow::createProject);
-//  connect(&(this->BDeleteProject), &QPushButton::clicked, this, &MainWindow::deleteProject);
-//  connect(&(this->LWProjects), &QListWidget::itemDoubleClicked, this, &MainWindow::openProject);
-
-//  this->mainBBack.setText("Back");
-//  this->mainBBack.setHidden(true);
-
-//  this->BCreateProject.setText("Create project");
-//  this->BDeleteProject.setText("Delete project");
-
-//  this->GBCheckBox.setHidden(true);
-
-//  this->LMain.addWidget(&(this->mainBBack));
-//  this->LMain.addWidget(&(this->BCreateProject));
-//  this->LMain.addWidget(&(this->BDeleteProject));
-//  this->LMain.addWidget(&(this->GBCheckBox));
-//  this->LMain.addWidget(&(this->LWProjects));
-//  this->setLayout(&(this->LMain));
-
-//  this->showMainPage();
-
   connect(&(this->network), &Network::loggedIn, this, &MainWindow::loggedIn);
   connect(&(this->BConfirm), &QPushButton::clicked, this, &MainWindow::sendLogin);
+  connect(&(this->BSettings), &QPushButton::clicked, this, &MainWindow::showSettings);
+  connect(&(this->BAccount), &QPushButton::clicked, this, &MainWindow::openAccount);
 
+  this->inputAddress.setHidden(true);
+  this->inputAddress.setPlaceholderText("Input new address");
+
+  this->BSettings.setText("◘");
   this->BConfirm.setText("Confirm");
+
   this->login.setPlaceholderText("Enter login");
   this->password.setPlaceholderText("Enter password");
   this->password.setEchoMode(QLineEdit::Password);
 
+  this->LMain.addWidget(&(this->inputAddress));
   this->LMain.addWidget(&(this->login));
   this->LMain.addWidget(&(this->password));
   this->LMain.addWidget(&(this->BConfirm));
+  this->LMain.addWidget(&(this->BSettings));
+
   this->setLayout(&(this->LMain));
 }
 
@@ -72,7 +59,6 @@ void MainWindow::getReply()
 
 MainWindow::~MainWindow()
 {
-//  this->LCheckBox.deleteLater();
   for (auto item:VCheckBox)
     delete item;
   if (this->project != nullptr)
@@ -85,7 +71,8 @@ void MainWindow::showMainPage()
     {
       if (counter != this->LMain.indexOf(&(this->BCreateProject)) &&
           counter != this->LMain.indexOf(&(this->BDeleteProject)) &&
-          counter != this->LMain.indexOf(&(this->LWProjects)))
+          counter != this->LMain.indexOf(&(this->LWProjects)) &&
+          counter != this->LMain.indexOf(&(this->BAccount)))
         {
           if (this->LMain.itemAt(counter)->widget())
             {
@@ -104,6 +91,8 @@ void MainWindow::showMainPage()
     this->BDeleteProject.setVisible(true);
   if (this->LWProjects.isHidden())
     this->LWProjects.setVisible(true);
+  if (this->BAccount.isHidden())
+    this->BAccount.setVisible(true);
   this->LWProjects.clear();
   qDebug() << "Show MainPage";
   this->network.getProjects();
@@ -230,25 +219,29 @@ void MainWindow::projectClosed()
   this->showMainPage();
 }
 
-//Удалять векторы и удалять элементы лэйаутов, в которых лежат удаляемые данные
-
 void MainWindow::loggedIn()
 {
   this->login.close();
   this->password.close();
   this->BConfirm.close();
+  this->BSettings.close();
   this->LMain.removeWidget(&(this->BConfirm));
   this->LMain.removeWidget(&(this->login));
   this->LMain.removeWidget(&(this->password));
+  this->LMain.removeWidget(&(this->BSettings));
 
   connect(&(this->network), &Network::readFinished, this, &MainWindow::getReply);
   connect(&(this->mainBBack), &QPushButton::clicked, this, &MainWindow::showMainPage);
   connect(&(this->BCreateProject), &QPushButton::clicked, this, &MainWindow::createProject);
   connect(&(this->BDeleteProject), &QPushButton::clicked, this, &MainWindow::deleteProject);
   connect(&(this->LWProjects), &QListWidget::itemDoubleClicked, this, &MainWindow::openProject);
+  connect(&(this->network), &Network::signalReturnPersonaTasks, this, &MainWindow::getPersonalTasks);
 
   this->mainBBack.setText("Back");
   this->mainBBack.setHidden(true);
+
+  this->BAccount.setText("Account");
+  this->BAccount.setVisible(false);
 
   this->BCreateProject.setText("Create project");
   this->BDeleteProject.setText("Delete project");
@@ -260,6 +253,7 @@ void MainWindow::loggedIn()
   this->LMain.addWidget(&(this->BDeleteProject));
   this->LMain.addWidget(&(this->GBCheckBox));
   this->LMain.addWidget(&(this->LWProjects));
+  this->LMain.addWidget(&(this->BAccount));
 
   this->showMainPage();
 }
@@ -267,7 +261,54 @@ void MainWindow::loggedIn()
 void MainWindow::sendLogin()
 {
   if (!this->login.text().isEmpty() && !this->login.text().isEmpty())
-    this->user.login = this->login.text();
-    this->user.password = this->password.text();
-    this->network.login(this->login.text(), this->password.text());
+    {
+      this->network.login(this->login.text(), this->password.text());
+      this->network.user.login = this->login.text();
+      this->network.user.password = this->password.text();
+    }
+}
+
+void MainWindow::showSettings()
+{
+  if (this->BSettings.text() == "◘")
+  {
+      this->hideAll();
+      this->BSettings.setVisible(true);
+      this->BSettings.icon().detach();
+      this->BSettings.setText("Save");
+      this->inputAddress.setVisible(true);
+  }
+  else
+    {
+      if (!this->inputAddress.text().isEmpty())
+        this->network.setServerAddress(this->inputAddress.text());
+      this->hideAll();
+      this->login.setVisible(true);
+      this->password.setVisible(true);
+      this->BConfirm.setVisible(true);
+      this->BSettings.setVisible(true);
+      this->BSettings.setText("◘");
+    }
+}
+
+void MainWindow::openAccount()
+{
+  this->hideAll();
+  this->mainBBack.setVisible(true);
+
+  if (this->LMain.indexOf(&(this->personalTasks)) == -1)
+    this->LMain.addWidget(&(this->personalTasks));
+
+  this->personalTasks.append("Job's done!");
+  this->personalTasks.setReadOnly(true);
+  this->personalTasks.setVisible(true);
+
+  this->network.personalTasks();
+}
+
+void MainWindow::getPersonalTasks()
+{
+qDebug() << "personal tasks";
+  this->personalTasks.clear();
+  this->personalTasks.append(this->network.returnPersonalTasks());
 }

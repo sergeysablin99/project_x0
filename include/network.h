@@ -8,7 +8,7 @@
 #include <QTimer>
 #include <string>
 #include "json.hpp"
-
+#include "user.h"
 
 class Network : public QObject
 {
@@ -21,6 +21,7 @@ class Network : public QObject
   QVector<nlohmann::json> replyBuffer;
 
 public:
+  User user;
   void getProjects();
   void getTasks(const QString projectName = "");
   void getEmployee(QString taskName = "");
@@ -49,6 +50,8 @@ public:
   QString tasksDescription();
   QVector<QString> tasksEmployee();
   void tasksSubtasks(QString taskName = "");
+  void personalTasks();
+  QString returnPersonalTasks();
 
   void changeDate(QString task, QString newDate);
   void changeTarget(QString task, QString newTarget);
@@ -69,6 +72,7 @@ signals:
   void returnEmployee();
   void returnSubtasks();
   void loggedIn();
+  void signalReturnPersonaTasks();
 };
 
 #endif // NETWORK_H

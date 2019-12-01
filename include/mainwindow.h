@@ -1,6 +1,7 @@
 ﻿#ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QCalendarWidget>
 #include "Project.h"
 #include "user.h"
 
@@ -24,10 +25,16 @@ class MainWindow : public QWidget
   QLineEdit newProjectName;
 
   //LOGIN
-  User user;
   QLineEdit login;
   QLineEdit password;
   QPushButton BConfirm;
+
+  QPushButton BAccount;
+  QTextEdit personalTasks;
+
+  //SETTINGS
+  QPushButton BSettings;
+  QLineEdit inputAddress;
 
 public:
   MainWindow();
@@ -36,6 +43,7 @@ public:
 
 public slots:
   void showMainPage();
+  void showSettings();
   void createProject();
   void deleteProject();
   void getReply();
@@ -43,5 +51,7 @@ public slots:
   void openProject(QListWidgetItem* projectName);
   void sendLogin();
   void loggedIn();
+  void getPersonalTasks();
+  void openAccount();
 };
 #endif // MAINWINDOW_H

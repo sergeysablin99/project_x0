@@ -2,8 +2,6 @@
 
 Network::Network()
 {
-//  connect(&(this->networkManager), &QNetworkAccessManager::finished, this, &Network::slotReadyRead);
-//  connect(&(this->networkManager), &QNetworkAccessManager::finished, this, &Network::slotReadyWrite);
   connect(&(this->networkManager), &QNetworkAccessManager::finished, this, &Network::slotAuth);
   this->serverAddress = "http://localhost:7474/db/data/transaction/commit";
   this->bufferDynamic = false;
@@ -50,6 +48,9 @@ void Network::slotReadyRead(QNetworkReply *reply)
           else
             if (this->defineReply() == 0)
               emit this->returnEmployee();
+          else
+              if (this->defineReply() == 3)
+                emit this->signalReturnPersonaTasks();
           else
               emit this->returnSubtasks();
         }
@@ -199,7 +200,7 @@ QNetworkRequest* Network::prebuildRequest()
 
   request->setRawHeader ("Accept", "application/json; charset=UTF-8");
   request->setRawHeader ("Content-Type", "application/json");
-  request->setRawHeader ("Authorization", "Basic dGVzdDp0ZXN0");
+  request->setRawHeader ("Authorization", "Basic "  + (this->user.login + ":" +this->user. password).toUtf8().toBase64());
   return request;
 }
 
@@ -424,7 +425,10 @@ int Network::defineReply()
     if (replyType == "t1")
       return 2;
   else
-      return 1;
+      if (replyType == "pt")
+          return 3;
+  else
+        return 1;
 }
 
 void Network::getEmployee(QString taskName)
@@ -545,4 +549,48 @@ void Network::slotAuth(QNetworkReply *reply)
       this->bufferDynamic = false;
       emit this->loggedIn();
     }
+}
+
+void Network::personalTasks()
+{
+  QNetworkRequest *request = prebuildRequest();
+
+  QString request_command = QString(R"({"statements":[{"statement":")");
+
+  request_command.append("MATCH (pt:Task)<-[:WORKS_AT]-(e:Employee {name:'" + this->user.login + "'}) RETURN pt");
+
+  request_command.append(R"("}]})");
+
+  this->requestBuffer.push_back(qMakePair(*request, request_command));
+  if (this->bufferDynamic == false)
+    this->slotReadyWrite();
+
+  delete request;
+}
+
+QString Network::returnPersonalTasks()
+{
+  QString reply = "Current tasks:\n";
+  QStringList deadlines;
+  QStringList tasks;
+
+  if (!(this->replyBuffer.isEmpty()))
+    {
+      if (!this->replyBuffer.at(0).at("results")[0].at("data")[0].is_null())
+      {
+        for (auto& iterator : this->replyBuffer.at(0).at("results")[0].at("data").items())
+          {
+            for(auto& it : iterator.key()){
+                std::string substring = iterator.value().at("row")[0].at("date").dump();
+                if (!(substring.empty()))
+                  deadlines.push_back(substring.substr(1, substring.size()  - 2).data());
+              }
+          }//for
+
+        this->unpackReply("name");
+        tasks = this->returnReply().toList();
+        }
+    }
+
+  return reply;
 }
