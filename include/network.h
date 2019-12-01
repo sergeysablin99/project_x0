@@ -25,7 +25,7 @@ public:
   void getProjects();
   void getTasks(const QString projectName = "");
   void getEmployee(QString taskName = "");
-  void login(const QString login, const QString password);
+  void login();
   void deleteProject(const QString projectName);
   void createProject(const QString projectName, const QStringList & tasks);
   void deleteTask(const QString taskName, const QString projectName = "");

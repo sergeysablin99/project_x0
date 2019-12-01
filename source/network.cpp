@@ -526,12 +526,12 @@ void Network::deleteSubtask(QString subtaskName, QString taskName)
   delete request;
 }
 
-void Network::login(const QString login, const QString password)
+void Network::login()
 {
   QNetworkRequest *request = new QNetworkRequest(QUrl(this->serverAddress));
 
   request->setRawHeader ("Accept", "application/json; charset=UTF-8");
-  request->setRawHeader ("Authorization", "Basic "  + (login + ":" + password).toUtf8().toBase64());
+  request->setRawHeader ("Authorization", "Basic "  + (this->user.login + ":" + this->user.password).toUtf8().toBase64());
 
   this->networkManager.get(*request)->readAll();
 

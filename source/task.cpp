@@ -17,28 +17,28 @@ Task::Task(QWidget* parent, QString name, Network* network) : QWidget(parent), n
   connect(this->network, &Network::returnSubtasks, this, &Task::returnSubtasks);
   connect(&(this->BBack), &QPushButton::clicked, this, &Task::back);
 
-  //Элементы для изменения задачи
   this->dateEdit.setReadOnly(false);
   this->dateEdit.setVisible(false);
 
   this->targetEdit.setPlaceholderText("Input your target");
   this->targetEdit.setVisible(false);
   this->targetEdit.setReadOnly(false);
+  this->targetEdit.setMaximumSize(200, 150);
+  this->targetEdit.setBaseSize(30, 30);
 
   this->nameEdit.setPlaceholderText("Input new name");
   this->nameEdit.setHidden(true);
   this->nameEdit.setReadOnly(false);
 
-  this->descriptionEdit.setPlaceholderText("Text edit");
+  this->descriptionEdit.setPlaceholderText("Description edit");
   this->descriptionEdit.setVisible(false);
   this->descriptionEdit.setReadOnly(false);
-
-  // Получить из базы данных цель задачи
+  this->descriptionEdit.setMaximumSize(75, 75);
+  this->descriptionEdit.setBaseSize(50, 50);
 
   this->target.setMaximumWidth(100);
   this->target.setBaseSize(30, 20);
 
-  // Получить из базы данных описание задачи
   this->description.setReadOnly(true);
   this->description.setMaximumSize(200, 70);
   this->description.setBaseSize(200, 50);
@@ -54,16 +54,17 @@ Task::Task(QWidget* parent, QString name, Network* network) : QWidget(parent), n
   this->layout.addWidget(&(this->target), 0, 0, Qt::AlignLeft);
   this->layout.addWidget(&(this->date), 0, 1, Qt::AlignLeft);
   this->layout.addWidget(&(this->description), 1, 0, Qt::AlignLeft);
-  this->layout.addWidget(&(this->employee));
-  this->layout.addWidget(&(this->subtask));
-  this->layout.addWidget(&(this->nameEdit));
-  this->layout.addWidget(&(this->BBack));
-  this->layout.addWidget(&(this->GBECheckBox));
-  this->layout.addWidget(&(this->GBTCheckBox));
-  this->layout.addWidget(&(this->editButton), 3, 2, Qt::AlignLeft);
+  this->layout.addWidget(&(this->employee), 2, 0, Qt::AlignLeft);
+  this->layout.addWidget(&(this->subtask), 1, 1, Qt::AlignLeft);
+  this->layout.addWidget(&(this->nameEdit), 1, 1, Qt::AlignLeft);
+  this->layout.addWidget(&(this->BBack), 3, 0, Qt::AlignLeft);
+
+  this->layout.addWidget(&(this->GBECheckBox), 3, 0, Qt::AlignLeft);
+  this->layout.addWidget(&(this->GBTCheckBox), 2, 0, Qt::AlignLeft);
+  this->layout.addWidget(&(this->editButton), 3, 1, Qt::AlignLeft);
   this->layout.addWidget(&(this->targetEdit), 0, 1, Qt::AlignLeft);
-  this->layout.addWidget(&(this->descriptionEdit), 1, 0, Qt::AlignLeft);
-  this->layout.addWidget(&(this->dateEdit), 0, 2, Qt::AlignLeft);
+  this->layout.addWidget(&(this->descriptionEdit), 0, 0, Qt::AlignLeft);
+  this->layout.addWidget(&(this->dateEdit), 2, 1, Qt::AlignLeft);
 
   this->setLayout(&(this->layout));
 

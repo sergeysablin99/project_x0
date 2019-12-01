@@ -9,7 +9,8 @@ class MainWindow : public QWidget
 {
   Q_OBJECT
 
-  QHBoxLayout LMain;
+  QLabel projectsLabel;
+  QGridLayout LMain;
   QPushButton mainBBack;
   QPushButton BDeleteProject;
   QListWidget LWProjects;

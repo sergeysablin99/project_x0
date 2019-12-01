@@ -10,18 +10,18 @@ MainWindow::MainWindow() : project(nullptr)
   this->inputAddress.setHidden(true);
   this->inputAddress.setPlaceholderText("Input new address");
 
-  this->BSettings.setText("◘");
+  this->BSettings.setText("Settings");
   this->BConfirm.setText("Confirm");
 
   this->login.setPlaceholderText("Enter login");
   this->password.setPlaceholderText("Enter password");
   this->password.setEchoMode(QLineEdit::Password);
 
-  this->LMain.addWidget(&(this->inputAddress));
-  this->LMain.addWidget(&(this->login));
-  this->LMain.addWidget(&(this->password));
-  this->LMain.addWidget(&(this->BConfirm));
-  this->LMain.addWidget(&(this->BSettings));
+  this->LMain.addWidget(&(this->inputAddress), 1, 0, Qt::AlignLeft);
+  this->LMain.addWidget(&(this->login), 0, 0, Qt::AlignLeft);
+  this->LMain.addWidget(&(this->password), 1, 0, Qt::AlignLeft);
+  this->LMain.addWidget(&(this->BConfirm), 0, 1, Qt::AlignLeft);
+  this->LMain.addWidget(&(this->BSettings), 1, 1, Qt::AlignLeft);
 
   this->setLayout(&(this->LMain));
 }
@@ -149,6 +149,8 @@ void MainWindow::createProject()
           this->network.createProject(this->newProjectName.text(), checkedTasks);
           this->showMainPage();
         }
+      else
+        this->showMainPage();
     }
 }
 
@@ -248,12 +250,20 @@ void MainWindow::loggedIn()
 
   this->GBCheckBox.setHidden(true);
 
-  this->LMain.addWidget(&(this->mainBBack));
-  this->LMain.addWidget(&(this->BCreateProject));
-  this->LMain.addWidget(&(this->BDeleteProject));
-  this->LMain.addWidget(&(this->GBCheckBox));
-  this->LMain.addWidget(&(this->LWProjects));
-  this->LMain.addWidget(&(this->BAccount));
+  this->projectsLabel.setBaseSize(20, 10);
+  this->projectsLabel.setMaximumWidth(50);
+  this->projectsLabel.setText("Projects list");
+  this->projectsLabel.setVisible(true);
+
+  this->setMinimumSize(500, 400);
+
+  this->LMain.addWidget(&(this->projectsLabel), 0, 0, Qt::AlignLeft);
+  this->LMain.addWidget(&(this->mainBBack), 2, 2, Qt::AlignLeft);
+  this->LMain.addWidget(&(this->BCreateProject), 2, 0, Qt::AlignLeft);
+  this->LMain.addWidget(&(this->BDeleteProject), 2, 1, Qt::AlignLeft);
+  this->LMain.addWidget(&(this->GBCheckBox), 2, 0, Qt::AlignLeft);
+  this->LMain.addWidget(&(this->LWProjects), 1, 0, Qt::AlignLeft);
+  this->LMain.addWidget(&(this->BAccount), 2, 2, Qt::AlignLeft);
 
   this->showMainPage();
 }
@@ -262,15 +272,15 @@ void MainWindow::sendLogin()
 {
   if (!this->login.text().isEmpty() && !this->login.text().isEmpty())
     {
-      this->network.login(this->login.text(), this->password.text());
       this->network.user.login = this->login.text();
       this->network.user.password = this->password.text();
+      this->network.login();
     }
 }
 
 void MainWindow::showSettings()
 {
-  if (this->BSettings.text() == "◘")
+  if (this->BSettings.text() == "Settings")
   {
       this->hideAll();
       this->BSettings.setVisible(true);
@@ -287,7 +297,7 @@ void MainWindow::showSettings()
       this->password.setVisible(true);
       this->BConfirm.setVisible(true);
       this->BSettings.setVisible(true);
-      this->BSettings.setText("◘");
+      this->BSettings.setText("Settings");
     }
 }
 
