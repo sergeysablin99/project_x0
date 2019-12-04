@@ -1,7 +1,6 @@
 ﻿#ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QCalendarWidget>
 #include "Project.h"
 #include "user.h"
 

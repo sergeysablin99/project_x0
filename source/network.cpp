@@ -533,15 +533,18 @@ void Network::login()
   request->setRawHeader ("Accept", "application/json; charset=UTF-8");
   request->setRawHeader ("Authorization", "Basic "  + (this->user.login + ":" + this->user.password).toUtf8().toBase64());
 
-  this->networkManager.get(*request)->readAll();
+  QNetworkReply *reply = this->networkManager.get(*request);
+
+  connect(reply, QOverload<QNetworkReply::NetworkError>::of(&QNetworkReply::error), this, &Network::loginError);
 
   delete request;
 }
 
 void Network::slotAuth(QNetworkReply *reply)
 {
-
-  if (reply->readAll() == "")
+  QString repl = reply->readAll();
+  qDebug( )<<  repl;
+  if (reply != nullptr && repl == "")
     {
       disconnect(&(this->networkManager), &QNetworkAccessManager::finished, this, &Network::slotAuth);
       connect(&(this->networkManager), &QNetworkAccessManager::finished, this, &Network::slotReadyRead);
@@ -549,6 +552,7 @@ void Network::slotAuth(QNetworkReply *reply)
       this->bufferDynamic = false;
       emit this->loggedIn();
     }
+  reply->deleteLater();
 }
 
 void Network::personalTasks()
@@ -593,4 +597,15 @@ QString Network::returnPersonalTasks()
     }
 
   return reply;
+}
+
+void Network::loginError(QNetworkReply::NetworkError code)
+{qDebug() << code;
+  if (code != QNetworkReply::NoError && code != QNetworkReply::ContentOperationNotPermittedError)
+    {
+      this->error.setText("Login error\nTry again");
+      if (this->error.button(QMessageBox::Ok))
+        this->error.addButton(QMessageBox::Ok);
+      this->error.show();
+    }
 }

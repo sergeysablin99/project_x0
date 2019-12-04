@@ -2,6 +2,7 @@
 #define NETWORK_H
 
 #include <QWidget>
+#include <QMessageBox>
 #include <QNetworkAccessManager>
 #include <QEventLoop>
 #include <QNetworkReply>
@@ -19,6 +20,8 @@ class Network : public QObject
   QVector<QString> unpackedReply;
   QVector<QPair<const QNetworkRequest, const QString>> requestBuffer;
   QVector<nlohmann::json> replyBuffer;
+
+  QMessageBox error;
 
 public:
   User user;
@@ -66,6 +69,7 @@ public slots:
   void slotReadyRead(QNetworkReply *reply);
   void slotReadyWrite();
   void slotAuth(QNetworkReply *reply);
+  void loginError(QNetworkReply::NetworkError code);
 
 signals:
   void readFinished();

@@ -2,6 +2,7 @@
 
 MainWindow::MainWindow() : project(nullptr)
 {
+  this->setWindowTitle("Project_X1");
   connect(&(this->network), &Network::loggedIn, this, &MainWindow::loggedIn);
   connect(&(this->BConfirm), &QPushButton::clicked, this, &MainWindow::sendLogin);
   connect(&(this->BSettings), &QPushButton::clicked, this, &MainWindow::showSettings);
@@ -72,7 +73,8 @@ void MainWindow::showMainPage()
       if (counter != this->LMain.indexOf(&(this->BCreateProject)) &&
           counter != this->LMain.indexOf(&(this->BDeleteProject)) &&
           counter != this->LMain.indexOf(&(this->LWProjects)) &&
-          counter != this->LMain.indexOf(&(this->BAccount)))
+          counter != this->LMain.indexOf(&(this->BAccount)) &&
+          counter != this->LMain.indexOf(&(this->projectsLabel)))
         {
           if (this->LMain.itemAt(counter)->widget())
             {
@@ -91,11 +93,13 @@ void MainWindow::showMainPage()
     this->BDeleteProject.setVisible(true);
   if (this->LWProjects.isHidden())
     this->LWProjects.setVisible(true);
+  if (this->projectsLabel.isHidden())
+    this->projectsLabel.setVisible(true);
   if (this->BAccount.isHidden())
     this->BAccount.setVisible(true);
   this->LWProjects.clear();
-  qDebug() << "Show MainPage";
-  this->network.getProjects();
+
+this->network.getProjects();
 }
 
 void MainWindow::createProject()
@@ -150,7 +154,10 @@ void MainWindow::createProject()
           this->showMainPage();
         }
       else
-        this->showMainPage();
+        {
+          this->BCreateProject.setText("Create project");
+          this->showMainPage();
+        }
     }
 }
 
@@ -191,15 +198,15 @@ void MainWindow::deleteProject()
       this->network.getProjects();
     }
   else
-  {
+    {
       for (auto checkedProject:this->VCheckBox)
         {
           if (checkedProject->isChecked())
             this->network.deleteProject(checkedProject->text());
         }
-        qDebug() << "ShowMainPage";
+      qDebug() << "ShowMainPage";
       this->showMainPage();
-  }
+    }
 }
 
 void MainWindow::openProject (QListWidgetItem* projectName)
@@ -250,15 +257,12 @@ void MainWindow::loggedIn()
 
   this->GBCheckBox.setHidden(true);
 
-  this->projectsLabel.setBaseSize(20, 10);
-  this->projectsLabel.setMaximumWidth(50);
   this->projectsLabel.setText("Projects list");
   this->projectsLabel.setVisible(true);
-
-  this->setMinimumSize(500, 400);
+  this->projectsLabel.setMargin(10);
 
   this->LMain.addWidget(&(this->projectsLabel), 0, 0, Qt::AlignLeft);
-  this->LMain.addWidget(&(this->mainBBack), 2, 2, Qt::AlignLeft);
+  this->LMain.addWidget(&(this->mainBBack), 3, 0, Qt::AlignLeft);
   this->LMain.addWidget(&(this->BCreateProject), 2, 0, Qt::AlignLeft);
   this->LMain.addWidget(&(this->BDeleteProject), 2, 1, Qt::AlignLeft);
   this->LMain.addWidget(&(this->GBCheckBox), 2, 0, Qt::AlignLeft);
@@ -275,19 +279,21 @@ void MainWindow::sendLogin()
       this->network.user.login = this->login.text();
       this->network.user.password = this->password.text();
       this->network.login();
+
+      this->password.clear();
     }
 }
 
 void MainWindow::showSettings()
 {
   if (this->BSettings.text() == "Settings")
-  {
+    {
       this->hideAll();
       this->BSettings.setVisible(true);
       this->BSettings.icon().detach();
       this->BSettings.setText("Save");
       this->inputAddress.setVisible(true);
-  }
+    }
   else
     {
       if (!this->inputAddress.text().isEmpty())
@@ -318,7 +324,7 @@ void MainWindow::openAccount()
 
 void MainWindow::getPersonalTasks()
 {
-qDebug() << "personal tasks";
+  qDebug() << "personal tasks";
   this->personalTasks.clear();
   this->personalTasks.append(this->network.returnPersonalTasks());
 }

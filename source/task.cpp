@@ -8,9 +8,6 @@ Task::Task(QWidget* parent): QWidget(parent)
 
 Task::Task(QWidget* parent, QString name, Network* network) : QWidget(parent), network(network), name(name)
 {
-  this->setWindowTitle(this->name);
-  this->setMinimumSize(400, 250);
-
   connect(&(this->editButton), &QPushButton::clicked, this, &Task::SlotEditButton);
   connect(this->network, &Network::readFinished, this, &Task::getReply);
   connect(this->network, &Network::returnEmployee, this, &Task::returnEmployee);
@@ -33,8 +30,6 @@ Task::Task(QWidget* parent, QString name, Network* network) : QWidget(parent), n
   this->descriptionEdit.setPlaceholderText("Description edit");
   this->descriptionEdit.setVisible(false);
   this->descriptionEdit.setReadOnly(false);
-  this->descriptionEdit.setMaximumSize(75, 75);
-  this->descriptionEdit.setBaseSize(50, 50);
 
   this->target.setMaximumWidth(100);
   this->target.setBaseSize(30, 20);
@@ -75,7 +70,6 @@ Task::Task(QWidget* parent, QString name, Network* network) : QWidget(parent), n
 
 void Task::SlotEditButton()
 {
-  //TODO: кликабельный список исполнителей и подзадач, чтобы применялось и сохранялось в БД
   if (this->editButton.text() == "Edit")  {
       this->description.setVisible(false);
 
@@ -83,6 +77,7 @@ void Task::SlotEditButton()
       this->targetEdit.setVisible(true);
       this->dateEdit.setVisible(true);
       this->nameEdit.setVisible(true);
+
       this->GBECheckBox.setVisible(true);
       this->GBTCheckBox.setVisible(true);
 
@@ -149,6 +144,7 @@ void Task::SlotEditButton()
       this->BBack.setVisible(true);
       this->editButton.setText("Edit");
 
+      this->employee.clear();
       this->network->getEmployee(this->name);
       this->network->tasksSubtasks(this->name);
       this->network->getTaskData(this->name);
@@ -223,7 +219,7 @@ void Task::back()
 
 void Task::returnEmployee()
 {
-qDebug() << "1";
+  qDebug() << "return employee";
     this->network->unpackReply("name");
     QStringList checkList = this->network->returnReply().toList();
 

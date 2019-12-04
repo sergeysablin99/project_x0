@@ -9,9 +9,10 @@ class Project : public QWidget
   Q_OBJECT
 
   //STATIC
+  QLabel taskLabel;
   QString name;
   Network* network;
-  QHBoxLayout layout;
+  QGridLayout layout;
   Task *task;
   QPushButton editButton;
   QPushButton BBack;
@@ -20,12 +21,16 @@ class Project : public QWidget
 
   //EDIT
   QGroupBox GBCheckBox;
-  QVector<QCheckBox *> VCheckBox;
+  QVector<QCheckBox*> VCheckBox;
   QLineEdit setName;
-  QVBoxLayout LCheckBox;
+  QHBoxLayout LCheckBox;
+  QVBoxLayout LVCheckBox;
+  QVBoxLayout LECheckBox;
+  QVector<QCheckBox*> VECheckBox;
   QVBoxLayout LGroupBox;
   QLineEdit newTaskName;
   QStringList checkedTasks;
+  QTextEdit newDescription;
 
 public:
   Project(QWidget* parent = nullptr);
@@ -38,6 +43,7 @@ public:
 
 public slots:
   void getReply();
+  void getEmployee();
   void openTask(QListWidgetItem *item);
   void taskClosed();
   void createTask();
