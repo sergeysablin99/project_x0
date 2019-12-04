@@ -1,6 +1,6 @@
 ﻿#include "../include/mainwindow.h"
 
-MainWindow::MainWindow() : project(nullptr)
+MainWindow::MainWindow() : project(nullptr), LMain(QBoxLayout::LeftToRight), LEnter(QBoxLayout::TopToBottom), LButtons(QBoxLayout::TopToBottom)
 {
   this->setWindowTitle("Project_X1");
   connect(&(this->network), &Network::loggedIn, this, &MainWindow::loggedIn);
@@ -15,14 +15,23 @@ MainWindow::MainWindow() : project(nullptr)
   this->BConfirm.setText("Confirm");
 
   this->login.setPlaceholderText("Enter login");
+
   this->password.setPlaceholderText("Enter password");
   this->password.setEchoMode(QLineEdit::Password);
 
-  this->LMain.addWidget(&(this->inputAddress), 1, 0, Qt::AlignLeft);
-  this->LMain.addWidget(&(this->login), 0, 0, Qt::AlignLeft);
-  this->LMain.addWidget(&(this->password), 1, 0, Qt::AlignLeft);
-  this->LMain.addWidget(&(this->BConfirm), 0, 1, Qt::AlignLeft);
-  this->LMain.addWidget(&(this->BSettings), 1, 1, Qt::AlignLeft);
+  this->LEnter.addWidget(&(this->login));
+  this->LEnter.addWidget(&(this->password));
+  this->LEnter.addWidget(&(this->inputAddress));
+  this->LEnter.setAlignment(Qt::AlignCenter);
+  this->LEnter.setContentsMargins(100, 0, 0, 0);
+
+  this->LButtons.addWidget(&(this->BConfirm));
+  this->LButtons.addWidget(&(this->BSettings));
+  this->LButtons.setAlignment(Qt::AlignCenter);
+  this->LButtons.setContentsMargins(0, 0, 100, 0);
+
+  this->LMain.addLayout(&(this->LEnter));
+  this->LMain.addLayout(&(this->LButtons));
 
   this->setLayout(&(this->LMain));
 }
@@ -68,20 +77,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::showMainPage()
 {
-  for (int counter = 0; counter < this->LMain.count(); counter++)
-    {
-      if (counter != this->LMain.indexOf(&(this->BCreateProject)) &&
-          counter != this->LMain.indexOf(&(this->BDeleteProject)) &&
-          counter != this->LMain.indexOf(&(this->LWProjects)) &&
-          counter != this->LMain.indexOf(&(this->BAccount)) &&
-          counter != this->LMain.indexOf(&(this->projectsLabel)))
-        {
-          if (this->LMain.itemAt(counter)->widget())
-            {
-              this->LMain.itemAt(counter)->widget()->setHidden(true);
-            }
-        }//if
-    }
+  this->hideAll();
 
   this->mainBBack.setText("Back");
   this->BDeleteProject.setText("Delete project");
@@ -99,7 +95,7 @@ void MainWindow::showMainPage()
     this->BAccount.setVisible(true);
   this->LWProjects.clear();
 
-this->network.getProjects();
+  this->network.getProjects();
 }
 
 void MainWindow::createProject()
@@ -130,8 +126,6 @@ void MainWindow::createProject()
       if (this->LGroupBox.indexOf(&(this->newProjectName)) == -1)
         this->LGroupBox.insertWidget(0, &(this->newProjectName));
 
-      if (this->LMain.indexOf(&(this->GBCheckBox)) == -1)
-        this->LMain.addWidget(&(this->GBCheckBox));
       this->BCreateProject.setText("Save");
 
       //Get taks from server
@@ -165,7 +159,20 @@ void MainWindow::hideAll()
 {
   for (int counter = 0; counter < this->LMain.count(); counter++)
     {
-      this->LMain.itemAt(counter)->widget()->setHidden(true);
+      if (this->LMain.itemAt(counter)->widget() != nullptr)
+        this->LMain.itemAt(counter)->widget()->setHidden(true);
+    }
+
+  for (int counter = 0; counter < this->LEnter.count(); counter++)
+    {
+      if (this->LEnter.itemAt(counter)->widget() != nullptr)
+        this->LEnter.itemAt(counter)->widget()->setHidden(true);
+    }
+
+  for (int counter = 0; counter < this->LButtons.count(); counter++)
+    {
+      if (this->LButtons.itemAt(counter)->widget() != nullptr)
+        this->LButtons.itemAt(counter)->widget()->setHidden(true);
     }
 }
 
@@ -189,9 +196,6 @@ void MainWindow::deleteProject()
       this->newProjectName.setHidden(true);
       this->GBCheckBox.setVisible(true);
 
-      if (this->LMain.indexOf(&(this->GBCheckBox)) == -1)
-        this->LMain.addWidget(&(this->GBCheckBox));
-
       this->BDeleteProject.setText("Confirm");
 
       //Get taks from server
@@ -204,7 +208,7 @@ void MainWindow::deleteProject()
           if (checkedProject->isChecked())
             this->network.deleteProject(checkedProject->text());
         }
-      qDebug() << "ShowMainPage";
+
       this->showMainPage();
     }
 }
@@ -234,10 +238,18 @@ void MainWindow::loggedIn()
   this->password.close();
   this->BConfirm.close();
   this->BSettings.close();
-  this->LMain.removeWidget(&(this->BConfirm));
-  this->LMain.removeWidget(&(this->login));
-  this->LMain.removeWidget(&(this->password));
-  this->LMain.removeWidget(&(this->BSettings));
+  this->LEnter.removeWidget(&(this->login));
+  this->LEnter.removeWidget(&(this->password));
+  this->LEnter.removeWidget(&(this->inputAddress));
+  this->LEnter.setContentsMargins (0, 0, 0, 0);
+
+  this->LButtons.removeWidget(&(this->BConfirm));
+  this->LButtons.removeWidget(&(this->BSettings));
+  this->LButtons.setContentsMargins (0, 0, 0, 0);
+
+  this->LMain.takeAt(this->LMain.indexOf(&(this->LEnter)));
+  this->LMain.takeAt(this->LMain.indexOf(&(this->LButtons)));
+  this->LMain.setDirection(QBoxLayout::TopToBottom);
 
   connect(&(this->network), &Network::readFinished, this, &MainWindow::getReply);
   connect(&(this->mainBBack), &QPushButton::clicked, this, &MainWindow::showMainPage);
@@ -261,13 +273,22 @@ void MainWindow::loggedIn()
   this->projectsLabel.setVisible(true);
   this->projectsLabel.setMargin(10);
 
-  this->LMain.addWidget(&(this->projectsLabel), 0, 0, Qt::AlignLeft);
-  this->LMain.addWidget(&(this->mainBBack), 3, 0, Qt::AlignLeft);
-  this->LMain.addWidget(&(this->BCreateProject), 2, 0, Qt::AlignLeft);
-  this->LMain.addWidget(&(this->BDeleteProject), 2, 1, Qt::AlignLeft);
-  this->LMain.addWidget(&(this->GBCheckBox), 2, 0, Qt::AlignLeft);
-  this->LMain.addWidget(&(this->LWProjects), 1, 0, Qt::AlignLeft);
-  this->LMain.addWidget(&(this->BAccount), 2, 2, Qt::AlignLeft);
+  this->LEnter.addWidget(&(this->GBCheckBox));
+  this->LEnter.addWidget(&(this->personalTasks));
+  this->LEnter.addWidget(&(this->newProjectName));
+  this->LEnter.addWidget(&(this->personalTasks));
+
+  this->LButtons.setDirection(QBoxLayout::LeftToRight);
+  this->LButtons.addWidget(&(this->mainBBack));
+  this->LButtons.addWidget(&(this->BCreateProject));
+  this->LButtons.addWidget(&(this->BDeleteProject));
+  this->LButtons.addWidget(&(this->BAccount));
+
+  this->LMain.addWidget(&(this->projectsLabel));
+  this->LMain.addWidget(&(this->LWProjects));
+  this->LMain.addLayout(&(this->LEnter));
+  this->LMain.addLayout(&(this->LButtons));
+  this->LMain.setAlignment(Qt::AlignCenter);
 
   this->showMainPage();
 }
@@ -290,7 +311,6 @@ void MainWindow::showSettings()
     {
       this->hideAll();
       this->BSettings.setVisible(true);
-      this->BSettings.icon().detach();
       this->BSettings.setText("Save");
       this->inputAddress.setVisible(true);
     }
@@ -298,6 +318,7 @@ void MainWindow::showSettings()
     {
       if (!this->inputAddress.text().isEmpty())
         this->network.setServerAddress(this->inputAddress.text());
+
       this->hideAll();
       this->login.setVisible(true);
       this->password.setVisible(true);

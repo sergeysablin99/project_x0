@@ -6,11 +6,12 @@ int main(int argc, char *argv[])
   QApplication a(argc, argv);
 
   QString styles = R"(
-  MainWindow {
+  .MainWindow {
                   background-color:#E0FFFF;
                   min-width: 500px;
                   min-height: 350px;
                   }
+
   QPushButton {
       background-color:#66CDAA;
       color: #ffffff;
@@ -22,10 +23,10 @@ int main(int argc, char *argv[])
       font-weight: 10px;
       padding: 0 5px 0 5px;
       }
+
   QLineEdit, QTextEdit, QGroupBox {
       background-color:#ffffff;
       }
-
 
   QGroupBox#GBECheckBox, QGroupBox#GBTChechBox, QCheckBox  {
       min-width: 50px;

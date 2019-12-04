@@ -71,7 +71,23 @@ void Network::slotReadyWrite()
         {
           auto request = this->requestBuffer.takeFirst();
           qDebug() << "send request: " << request.second;
-          this->networkManager.post(request.first, request.second.toUtf8());
+          QNetworkReply* reply = this->networkManager.post(request.first, request.second.toUtf8());
+
+          QMessageBox *error = &(this->error);
+
+          connect(reply, QOverload<QNetworkReply::NetworkError>::of(&QNetworkReply::error),
+                  [error, reply](QNetworkReply::NetworkError code)
+          {
+              if (code != QNetworkReply::NoError && code != QNetworkReply::ContentOperationNotPermittedError)
+                {
+                  reply->close();
+
+                  error->setText("Server error");
+                  if (!(error->button(QMessageBox::Ok)))
+                    error->addButton(QMessageBox::Ok);
+                  error->show();
+                }
+            });
         }
 }
 
@@ -535,22 +551,43 @@ void Network::login()
 
   QNetworkReply *reply = this->networkManager.get(*request);
 
-  connect(reply, QOverload<QNetworkReply::NetworkError>::of(&QNetworkReply::error), this, &Network::loginError);
+  QMessageBox *error = &(this->error);
+
+  connect(reply, QOverload<QNetworkReply::NetworkError>::of(&QNetworkReply::error), [&, error, reply](QNetworkReply::NetworkError code)
+  {
+      qDebug() << code;
+
+  if (code != QNetworkReply::NoError && code != QNetworkReply::ContentOperationNotPermittedError)
+    {
+      if (reply->isOpen())
+        reply->close();
+
+      error->setText("Server error");
+      if (!(error->button(QMessageBox::Ok)))
+        error->addButton(QMessageBox::Ok);
+      error->show();
+    }
+  });
 
   delete request;
 }
 
 void Network::slotAuth(QNetworkReply *reply)
 {
-  QString repl = reply->readAll();
-  qDebug( )<<  repl;
-  if (reply != nullptr && repl == "")
+  if (reply->isReadable())
     {
-      disconnect(&(this->networkManager), &QNetworkAccessManager::finished, this, &Network::slotAuth);
-      connect(&(this->networkManager), &QNetworkAccessManager::finished, this, &Network::slotReadyRead);
-      connect(&(this->networkManager), &QNetworkAccessManager::finished, this, &Network::slotReadyWrite);
-      this->bufferDynamic = false;
-      emit this->loggedIn();
+      QString repl = reply->readAll();
+      qDebug( )<<  repl;
+      if (reply != nullptr && repl == "")
+        {
+          disconnect(&(this->networkManager), &QNetworkAccessManager::finished, this, &Network::slotAuth);
+          connect(&(this->networkManager), &QNetworkAccessManager::finished, this, &Network::slotReadyRead);
+          connect(&(this->networkManager), &QNetworkAccessManager::finished, this, &Network::slotReadyWrite);
+          this->bufferDynamic = false;
+          emit this->loggedIn();
+        }
+      else
+        this->loginError(reply->error());
     }
   reply->deleteLater();
 }
@@ -603,7 +640,7 @@ void Network::loginError(QNetworkReply::NetworkError code)
 {qDebug() << code;
   if (code != QNetworkReply::NoError && code != QNetworkReply::ContentOperationNotPermittedError)
     {
-      this->error.setText("Login error\nTry again");
+      this->error.setText("Server error");
       if (this->error.button(QMessageBox::Ok))
         this->error.addButton(QMessageBox::Ok);
       this->error.show();

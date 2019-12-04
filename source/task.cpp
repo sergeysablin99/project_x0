@@ -209,7 +209,6 @@ void Task::setTarget(QString newTarget)
 
 void Task::back()
 {
-  qDebug() << "task back";
   disconnect(this->network, &Network::readFinished, this, &Task::getReply);
   disconnect(this->network, &Network::returnEmployee, this, &Task::returnEmployee);
   disconnect(this->network, &Network::returnSubtasks, this, &Task::returnSubtasks);
@@ -219,7 +218,6 @@ void Task::back()
 
 void Task::returnEmployee()
 {
-  qDebug() << "return employee";
     this->network->unpackReply("name");
     QStringList checkList = this->network->returnReply().toList();
 
@@ -258,7 +256,6 @@ void Task::returnEmployee()
 
 void Task::returnSubtasks()
 {
-  qDebug() << '2';
   this->network->unpackReply("name");
   QStringList checkList = this->network->returnReply().toList();
 
