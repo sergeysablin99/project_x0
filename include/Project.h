@@ -12,7 +12,8 @@ class Project : public QWidget
   QLabel taskLabel;
   QString name;
   Network* network;
-  QGridLayout layout;
+  QVBoxLayout layout;
+  QHBoxLayout LButtons;
   Task *task;
   QPushButton editButton;
   QPushButton BBack;

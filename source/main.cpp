@@ -44,6 +44,7 @@ int main(int argc, char *argv[])
       min-width: 120px;
       min-height: 15px;
       }
+
   QTextEdit#descriptionEdit {
       min-widht: 200px;
       min-height: 50px;

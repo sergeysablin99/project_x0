@@ -24,17 +24,20 @@ Project::Project(QWidget* parent, QString name, Network* manager): QWidget(paren
 
   this->taskLabel.setText("Task list");
 
-  this->taskList.setMaximumWidth(200);
   this->taskList.setBaseSize(100, 100);
 
   this->GBCheckBox.setHidden(true);
 
-  this->layout.addWidget(&(this->taskLabel), 0, 0, Qt::AlignLeft);
-  this->layout.addWidget(&(this->taskList), 1, 0, Qt::AlignLeft);
-  this->layout.addWidget(&(this->editButton), 4, 0, Qt::AlignLeft);
-  this->layout.addWidget(&(this->BBack), 2, 0, Qt::AlignLeft);
-  this->layout.addWidget(&(this->BCreateTask), 3, 0, Qt::AlignLeft);
-  this->layout.addWidget(&(this->GBCheckBox), 1, 0, Qt::AlignLeft);
+
+  this->LButtons.addWidget(&(this->editButton));
+  this->LButtons.addWidget(&(this->BBack));
+  this->LButtons.addWidget(&(this->BCreateTask));
+
+  this->layout.addWidget(&(this->GBCheckBox));
+  this->layout.addWidget(&(this->taskLabel));
+  this->layout.addWidget(&(this->taskList));
+  this->layout.addLayout(&(this->LButtons));
+
   this->setLayout(&(this->layout));
 
   this->showMainPage();
@@ -150,26 +153,20 @@ void Project::hideAll()
 {
   for (int counter = 0; counter < this->layout.count(); counter++)
     {
-      this->layout.itemAt(counter)->widget()->setHidden(true);
+      if (this->layout.itemAt(counter)->widget())
+        this->layout.itemAt(counter)->widget()->setHidden(true);
+    }
+    for (int counter = 0; counter < this->LButtons.count(); counter++)
+    {
+        if(this->LButtons.itemAt(counter)->widget())
+          this->LButtons.itemAt(counter)->widget()->setHidden(true);
     }
 }
 
 void Project::showMainPage()
 {
-  for (int counter = 0; counter < this->layout.count(); counter++)
-    {
-      if (counter != this->layout.indexOf(&(this->editButton)) &&
-          counter != this->layout.indexOf(&(this->taskList)) &&
-          counter != this->layout.indexOf(&(this->BBack)) &&
-          counter != this->layout.indexOf(&(this->BCreateTask)) &&
-          counter != this->layout.indexOf(&(this->taskLabel)))
-        {
-          if (this->layout.itemAt(counter)->widget())
-            {
-              this->layout.itemAt(counter)->widget()->setHidden(true);
-            }
-        }//if
-    }
+
+  this->hideAll();
 
   this->editButton.setText("Edit project");
 
