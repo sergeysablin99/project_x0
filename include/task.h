@@ -36,6 +36,8 @@ class Task : public QWidget
   QPushButton BBack;
 
   //Edit
+  QLabel tasksLabel;
+  QLabel employeeLabel;
   QLineEdit nameEdit;
   QLineEdit targetEdit;
   QTextEdit descriptionEdit;

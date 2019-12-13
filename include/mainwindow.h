@@ -19,6 +19,7 @@ class MainWindow : public QWidget
   Project* project;
 
   //Widgets for edits
+  QLabel tasksLabel;
   QVector<QCheckBox*> VCheckBox;
   QGroupBox GBCheckBox;
   QVBoxLayout LCheckBox;

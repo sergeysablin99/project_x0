@@ -26,6 +26,9 @@ Project::Project(QWidget* parent, QString name, Network* manager): QWidget(paren
 
   this->taskList.setBaseSize(100, 100);
 
+  this->tasksLabel.setText("Tasks");
+  this->employeeLabel.setText("Employees");
+
   this->GBCheckBox.setHidden(true);
 
 
@@ -143,6 +146,8 @@ void Project::getReply()
   this->taskList.clear();
   this->taskList.addItems(checkList);
 
+  if (this->LVCheckBox.indexOf(&(this->tasksLabel)) == -1)
+    this->LVCheckBox.insertWidget(0, &(this->tasksLabel));
   if (this->LGroupBox.indexOf(&(this->LCheckBox)) == -1)
     this->LGroupBox.addLayout(&(this->LCheckBox));
   if (this->GBCheckBox.layout() == nullptr)
@@ -237,6 +242,8 @@ void Project::createTask()
       this->newTaskName.clear();
 
       this->hideAll();
+      this->tasksLabel.setVisible(true);
+      this->employeeLabel.setVisible(true);
       this->BBack.setVisible(true);
       this->BCreateTask.setVisible(true);
       this->newTaskName.setVisible(true);
@@ -326,4 +333,7 @@ void Project::getEmployee()
       this->VECheckBox.push_back(newObject);
       this->LECheckBox.addWidget(this->VECheckBox[this->VECheckBox.indexOf(newObject)]);
     }
+
+  if (this->LECheckBox.indexOf(&(this->employeeLabel)) == -1)
+    this->LECheckBox.insertWidget(0, &(this->employeeLabel));
 }

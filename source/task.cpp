@@ -35,17 +35,23 @@ Task::Task(QWidget* parent, QString name, Network* network) : QWidget(parent), n
   this->target.setBaseSize(30, 20);
 
   this->description.setReadOnly(true);
-  this->description.setMaximumSize(200, 70);
+//  this->description.setMaximumSize(200, 70);
   this->description.setBaseSize(200, 50);
 
   this->editButton.setText("Edit");
   this->BBack.setText("Back");
 
+  this->tasksLabel.setText("Choose subtasks");
+  this->tasksLabel.setVisible(false);
+
+  this->employeeLabel.setText("Choose employee");
+  this->employeeLabel.setVisible(false);
+
   this->GBECheckBox.setHidden(true);
   this->GBTCheckBox.setHidden(true);
 
   //Добавим виджеты на экран
-  this->layout.setSpacing(10);
+  this->layout.setContentsMargins(5, 5, 5, 5);
   this->layout.addWidget(&(this->target), 0, 0, Qt::AlignLeft);
   this->layout.addWidget(&(this->date), 0, 1, Qt::AlignLeft);
   this->layout.addWidget(&(this->description), 1, 0, Qt::AlignLeft);
@@ -77,6 +83,8 @@ void Task::SlotEditButton()
       this->targetEdit.setVisible(true);
       this->dateEdit.setVisible(true);
       this->nameEdit.setVisible(true);
+      this->tasksLabel.setVisible(true);
+      this->employeeLabel.setVisible(true);
 
       this->GBECheckBox.setVisible(true);
       this->GBTCheckBox.setVisible(true);
@@ -174,7 +182,7 @@ void Task::setName(QString newName)
 
 void Task::setDate(QDate newDate)
 {
-  this->date.setText(newDate.toString(Qt::ISODate));
+  this->date.setText("Deadline: " + newDate.toString(Qt::ISODate));
   this->dateEdit.setDate(newDate);
 }
 
@@ -218,40 +226,42 @@ void Task::back()
 
 void Task::returnEmployee()
 {
-    this->network->unpackReply("name");
-    QStringList checkList = this->network->returnReply().toList();
+  this->network->unpackReply("name");
+  QStringList checkList = this->network->returnReply().toList();
 
-    for (auto item:VECheckBox)
-      delete item;
-    this->VECheckBox.clear();
+  for (auto item:VECheckBox)
+    delete item;
+  this->VECheckBox.clear();
 
-    QLayoutItem *child;
-    while ((child = this->LECheckBox.takeAt(0)) != nullptr) {
-        delete child;
-      }
+  QLayoutItem *child;
+  while ((child = this->LECheckBox.takeAt(0)) != nullptr) {
+      delete child;
+    }
 
-    for (int taskIndex = 0; taskIndex < checkList.count(); taskIndex++)
-      {
-        QCheckBox *newObject = new QCheckBox(checkList.at(taskIndex));
+  for (int taskIndex = 0; taskIndex < checkList.count(); taskIndex++)
+    {
+      QCheckBox *newObject = new QCheckBox(checkList.at(taskIndex));
 
-        for (int item = 0; item < this->employee.count(); item++)
-          if (this->employee.item(item)->text() == checkList.at(taskIndex))
-            {
-              newObject->setCheckState(Qt::Checked);
-              break;
-            }
+      for (int item = 0; item < this->employee.count(); item++)
+        if (this->employee.item(item)->text() == checkList.at(taskIndex))
+          {
+            newObject->setCheckState(Qt::Checked);
+            break;
+          }
 
-        this->VECheckBox.push_back(newObject);
-        this->LECheckBox.addWidget(this->VECheckBox[this->VECheckBox.indexOf(newObject)]);
-      }
+      this->VECheckBox.push_back(newObject);
+      this->LECheckBox.addWidget(this->VECheckBox[this->VECheckBox.indexOf(newObject)]);
+    }
 
-    this->employee.clear();
-    this->employee.addItems(checkList);
+  this->employee.clear();
+  this->employee.addItems(checkList);
 
-    if (this->LEGroupBox.indexOf(&(this->LECheckBox)) == -1)
-      this->LEGroupBox.addLayout(&(this->LECheckBox));
-    if (this->GBECheckBox.layout() == nullptr)
-      this->GBECheckBox.setLayout(&(this->LEGroupBox));
+  if (this->LEGroupBox.indexOf(&(this->employeeLabel)) == -1)
+    this->LEGroupBox.insertWidget(0, &(this->employeeLabel));
+  if (this->LEGroupBox.indexOf(&(this->LECheckBox)) == -1)
+    this->LEGroupBox.addLayout(&(this->LECheckBox));
+  if (this->GBECheckBox.layout() == nullptr)
+    this->GBECheckBox.setLayout(&(this->LEGroupBox));
 }
 
 void Task::returnSubtasks()
@@ -288,6 +298,8 @@ void Task::returnSubtasks()
   this->subtask.clear();
   this->subtask.addItems(checkList);
 
+  if (this->LTCheckBox.indexOf(&(this->tasksLabel)) == -1)
+    this->LTCheckBox.insertWidget(0, &(this->tasksLabel));
   if (this->LTGroupBox.indexOf(&(this->LTCheckBox)) == -1)
     this->LTGroupBox.addLayout(&(this->LTCheckBox));
   if (this->GBTCheckBox.layout() == nullptr)

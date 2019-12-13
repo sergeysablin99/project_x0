@@ -19,6 +19,9 @@ MainWindow::MainWindow() : project(nullptr), LMain(QBoxLayout::LeftToRight), LEn
   this->password.setPlaceholderText("Enter password");
   this->password.setEchoMode(QLineEdit::Password);
 
+  this->tasksLabel.setHidden(true);
+  this->tasksLabel.setText("Choose tasks");
+
   this->LEnter.addWidget(&(this->login));
   this->LEnter.addWidget(&(this->password));
   this->LEnter.addWidget(&(this->inputAddress));
@@ -65,6 +68,9 @@ void MainWindow::getReply()
       this->GBCheckBox.setLayout(&(this->LGroupBox));
       this->LCheckBox.setContentsMargins(10, 10, 10, 10);
     }
+
+  if (this->LCheckBox.indexOf(&(this->tasksLabel)) == -1)
+    this->LCheckBox.insertWidget(0, &(this->tasksLabel));
 }
 
 MainWindow::~MainWindow()
@@ -82,6 +88,8 @@ void MainWindow::showMainPage()
   this->mainBBack.setText("Back");
   this->BDeleteProject.setText("Delete project");
   this->BCreateProject.setText("Create project");
+
+  this->LWProjects.clear();
 
   if (this->BCreateProject.isHidden())
     this->BCreateProject.setVisible(true);
@@ -115,6 +123,8 @@ void MainWindow::createProject()
 
       //Set "create" widgets
       this->hideAll();
+      this->tasksLabel.setText("choose new project's subtasks");
+      this->tasksLabel.setVisible(true);
       this->mainBBack.setVisible(true);
       this->BCreateProject.setVisible(true);
       this->newProjectName.setVisible(true);
@@ -191,6 +201,8 @@ void MainWindow::deleteProject()
 
       //Set "create" widgets
       this->hideAll();
+      this->tasksLabel.setText("Choose project to delete");
+      this->tasksLabel.setVisible(true);
       this->mainBBack.setVisible(true);
       this->BDeleteProject.setVisible(true);
       this->newProjectName.setHidden(true);
@@ -336,6 +348,7 @@ void MainWindow::openAccount()
   if (this->LMain.indexOf(&(this->personalTasks)) == -1)
     this->LMain.addWidget(&(this->personalTasks));
 
+  this->personalTasks.clear();
   this->personalTasks.append("Job's done!");
   this->personalTasks.setReadOnly(true);
   this->personalTasks.setVisible(true);

@@ -21,6 +21,8 @@ class Project : public QWidget
   QListWidget taskList;
 
   //EDIT
+  QLabel tasksLabel;
+  QLabel employeeLabel;
   QGroupBox GBCheckBox;
   QVector<QCheckBox*> VCheckBox;
   QLineEdit setName;

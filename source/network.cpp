@@ -149,7 +149,7 @@ void Network::deleteTask(const QString taskName, const QString projectName)
   delete request;
 }
 
-void Network::addTask(const QString taskName, const QString projectName)
+ void Network::addTask(const QString taskName, const QString projectName)
 {
   QNetworkRequest *request = prebuildRequest();
 
