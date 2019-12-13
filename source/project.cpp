@@ -19,6 +19,9 @@ Project::Project(QWidget* parent, QString name, Network* manager): QWidget(paren
   this->BCreateTask.setText("Create new task");
   this->BCreateTask.setHidden(false);
 
+  this->target.setPlaceholderText("Input target");
+  this->target.setHidden(true);
+
   this->setName.setHidden(true);
   this->setName.setPlaceholderText(this->name);
 
@@ -30,7 +33,7 @@ Project::Project(QWidget* parent, QString name, Network* manager): QWidget(paren
   this->employeeLabel.setText("Employees");
 
   this->GBCheckBox.setHidden(true);
-
+  this->GBCheckBox.setLayout(&(this->LGroupBox));
 
   this->LButtons.addWidget(&(this->editButton));
   this->LButtons.addWidget(&(this->BBack));
@@ -53,24 +56,46 @@ void Project::edit()
 
       this->hideAll();
       this->setName.clear();
+      for (auto task:this->VCheckBox)
+        delete task;
+      this->VCheckBox.clear();
       this->setName.setVisible(true);
       this->editButton.setVisible(true);
       this->GBCheckBox.setVisible(true);
       this->LGroupBox.insertWidget(0, &(this->setName));
 
+      for (auto employee : this->VECheckBox)
+        employee->setVisible(false);
+
       if (this->LCheckBox.indexOf(&(this->LVCheckBox)) == -1)
         this->LCheckBox.addLayout(&(this->LVCheckBox));
 
-      this->LGroupBox.insertLayout(1, &(this->LCheckBox));
+      if (this->LGroupBox.indexOf(&(this->LCheckBox)) == -1)
+        this->LGroupBox.insertLayout(1, &(this->LCheckBox));
 
       this->setName.setPlaceholderText(this->name);
+      this->tasksLabel.setVisible(true);
 
       this->network->getTasks();
     } else {
-      if (!this->setName.text().isEmpty())
+      QRegExp exp = QRegExp("[^']+\\w");
+      QRegExpValidator validator;
+      validator.setRegExp(exp);
+      int pos = 0;
+      QString stringToValidate = this->setName.text().simplified();
+
+      if ( !this->setName.text().isEmpty())
         {
-          this->network->setProjectName(this->name, this->setName.text());
-          this->name = this->setName.text();
+          if (validator.validate(stringToValidate, pos) != QValidator::Invalid)
+            {
+              this->network->setProjectName(this->name, this->setName.text());
+              this->name = this->setName.text();
+            } else {
+              this->error.setText("Incorrect input");
+              if (!(this->error.button(QMessageBox::Ok)))
+                this->error.addButton(QMessageBox::Ok);
+              this->error.show();
+            }
         }
 
       for (auto task:this->VCheckBox)
@@ -82,6 +107,7 @@ void Project::edit()
               this->network->deleteTask(task->text(), this->name);
         }
 
+      this->editButton.setText("Edit project");
       this->setName.setHidden(true);
       this->showMainPage();
     }
@@ -152,6 +178,11 @@ void Project::getReply()
     this->LGroupBox.addLayout(&(this->LCheckBox));
   if (this->GBCheckBox.layout() == nullptr)
     this->GBCheckBox.setLayout(&(this->LGroupBox));
+
+  if (this->VCheckBox.isEmpty())
+    this->tasksLabel.setText("No tasks available");
+  else
+    this->tasksLabel.setText("Choose tasks");
 }
 
 void Project::hideAll()
@@ -161,16 +192,15 @@ void Project::hideAll()
       if (this->layout.itemAt(counter)->widget())
         this->layout.itemAt(counter)->widget()->setHidden(true);
     }
-    for (int counter = 0; counter < this->LButtons.count(); counter++)
+  for (int counter = 0; counter < this->LButtons.count(); counter++)
     {
-        if(this->LButtons.itemAt(counter)->widget())
-          this->LButtons.itemAt(counter)->widget()->setHidden(true);
+      if(this->LButtons.itemAt(counter)->widget())
+        this->LButtons.itemAt(counter)->widget()->setHidden(true);
     }
 }
 
 void Project::showMainPage()
 {
-
   this->hideAll();
 
   this->editButton.setText("Edit project");
@@ -186,6 +216,8 @@ void Project::showMainPage()
   if (this->taskLabel.isHidden())
     this->taskLabel.setVisible(true);
 
+  this->taskList.clear();
+
   this->network->getTasks(this->name);
 }
 
@@ -199,6 +231,7 @@ void Project::taskClosed()
 void Project::back()
 {
   disconnect(this->network, &Network::readFinished, this, &Project::getReply);
+  disconnect(this->network, &Network::returnEmployee, this, &Project::getEmployee);
   this->close();
   emit this->showMainWindow();
 }
@@ -234,20 +267,28 @@ void Project::createTask()
       for (auto item:VCheckBox)
         delete item;
       this->VCheckBox.clear();
+      for (auto item:VECheckBox)
+        delete item;
+      this->VECheckBox.clear();
 
       QLayoutItem *child;
       while ((child = this->LVCheckBox.takeAt(0)) != nullptr) {
           delete child;
         }
       this->newTaskName.clear();
+      this->newDescription.clear();
+      this->target.clear();
 
       this->hideAll();
-      this->tasksLabel.setVisible(true);
-      this->employeeLabel.setVisible(true);
       this->BBack.setVisible(true);
       this->BCreateTask.setVisible(true);
       this->newTaskName.setVisible(true);
       this->GBCheckBox.setVisible(true);
+      this->target.setVisible(true);
+      this->tasksLabel.setVisible(true);
+
+      for (auto employee : this->VECheckBox)
+        employee->setVisible(true);
 
       this->newTaskName.setReadOnly(false);
       this->newTaskName.setPlaceholderText("Enter new task's name");
@@ -264,8 +305,15 @@ void Project::createTask()
       if (this->LGroupBox.indexOf(&(this->newDescription)) == -1)
         this->LGroupBox.insertWidget(1, &(this->newDescription));
 
-      if (this->GBCheckBox.layout() == nullptr)
-        this->GBCheckBox.setLayout(&(this->LGroupBox));
+      if (this->LGroupBox.indexOf(&(this->LCheckBox)) == -1)
+        this->LGroupBox.insertLayout(4, &(this->LCheckBox));
+
+      if (this->LGroupBox.indexOf(&(this->target)) == -1)
+        this->LGroupBox.insertWidget(2, &(this->target));
+
+      if (this->LGroupBox.indexOf(&(this->dateEdit)) == -1)
+        this->LGroupBox.insertWidget(3, &(this->dateEdit));
+      this->dateEdit.setVisible(true);
 
       this->newDescription.setReadOnly(false);
       this->newDescription.setPlaceholderText("Input description");
@@ -280,27 +328,55 @@ void Project::createTask()
     }
   else
     {
-      if (this->newTaskName.text() != "")
+      if (!this->newTaskName.text().isEmpty() && !this->newDescription.toPlainText().isEmpty()
+          && !this->target.text().isEmpty())
         {
-          QStringList checkedTasks;
-          checkedTasks.clear();
+          QRegExp exp = QRegExp("[^']+\\w");
+          QRegExpValidator validator;
+          validator.setRegExp(exp);
+          int pos = 0;
+          QString stringToValidate = this->newTaskName.text().simplified() +
+              this->newDescription.toPlainText().simplified() + this->target.text().simplified();
 
-          for (auto checkedTask:this->VCheckBox)
+          if (validator.validate(stringToValidate, pos) != QValidator::Invalid)
+            {qDebug() << 2;
+              QStringList checkedTasks;
+              QStringList checkedEmployee;
+              checkedTasks.clear();
+
+              for (auto checkedTask:this->VCheckBox)
+                {
+                  if (checkedTask->isChecked())
+                    checkedTasks.append(checkedTask->text());
+                }
+              for (auto employee:this->VECheckBox)
+                {
+                  if (employee->isChecked())
+                    checkedEmployee.append(employee->text());
+                }
+
+              this->network->createTask(this->newTaskName.text(), checkedTasks,
+                                        checkedEmployee, this->newDescription.toPlainText(),
+                                        this->target.text(), this->dateEdit.date());
+
+              this->newTaskName.setHidden(true);
+            } else
             {
-              if (checkedTask->isChecked())
-                checkedTasks.append(checkedTask->text());
+              this->error.setText("Incorrect input");
+              if (!(this->error.button(QMessageBox::Ok)))
+                this->error.addButton(QMessageBox::Ok);
+              this->error.show();
             }
-
-          this->network->createTask(this->newTaskName.text(), checkedTasks);
-
-          this->newTaskName.setHidden(true);
-          this->showMainPage();
         }
-      else
-        {
-          this->BCreateTask.setText("Create new task");
-          this->showMainPage();
-        }
+
+      this->BCreateTask.setText("Create new task");
+      this->target.setHidden(true);
+      this->newDescription.setHidden(true);
+      this->dateEdit.setHidden(true);
+      this->newTaskName.setHidden(true);
+      this->employeeLabel.setHidden(true);
+      this->tasksLabel.setHidden(true);
+      this->showMainPage();
     }
 }
 

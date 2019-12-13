@@ -64,7 +64,7 @@ void Network::slotReadyRead(QNetworkReply *reply)
 void Network::slotReadyWrite()
 {
       QEventLoop loop;
-      QTimer::singleShot(100, &loop, &QEventLoop::quit);
+      QTimer::singleShot(150, &loop, &QEventLoop::quit);
       loop.exec();
 
       if (!(this->requestBuffer.isEmpty()))
@@ -168,13 +168,15 @@ void Network::deleteTask(const QString taskName, const QString projectName)
   delete request;
 }
 
-void Network::createTask(const QString taskName, const QStringList& tasks)
+void Network::createTask(const QString taskName, const QStringList& tasks, const QStringList& employees,
+                  const QString description,const QString target, const QDate date)
 {
   QNetworkRequest *request = prebuildRequest();
 
   QString request_command = QString(R"({"statements":[{"statement":")");
 
-  request_command.append("Create (t:Task {name: '" + taskName + "'})");
+  request_command.append("Create (t:Task {name: '" + taskName + "', description:'" + description + "', "
+                         "target:'" + target + "', date:'" + date.toString(Qt::ISODate) + "'})");
 
   request_command.append(R"("}]})");
 
@@ -186,6 +188,10 @@ void Network::createTask(const QString taskName, const QStringList& tasks)
   for (const QString& task:tasks)
     {
       this->addSubtask(task, taskName);
+    }
+  for (const QString& employee : employees)
+    {
+      this->addEmployee(employee, taskName);
     }
 
   delete request;
@@ -645,4 +651,21 @@ void Network::loginError(QNetworkReply::NetworkError code)
         this->error.addButton(QMessageBox::Ok);
       this->error.show();
     }
+}
+
+void Network::setFinished(QString task)
+{
+  QNetworkRequest *request = prebuildRequest();
+
+  QString request_command = QString(R"({"statements":[{"statement":")");
+
+  request_command.append("MATCH (t:Task {name:'" + task + "'}) DETACH DELETE t");
+
+  request_command.append(R"("}]})");
+
+  this->requestBuffer.push_back(qMakePair(*request, request_command));
+  if (this->bufferDynamic == false)
+    this->slotReadyWrite();
+
+  delete request;
 }

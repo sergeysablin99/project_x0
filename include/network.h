@@ -37,7 +37,9 @@ public:
   void deleteEmployee(QString employee, QString taskName);
   void deleteSubtask(QString subtaskName, QString taskName);
   void addSubtask(QString subtaskName, QString taskName);
-  void createTask(const QString taskName, const QStringList& tasks);
+  void createTask(const QString taskName, const QStringList& tasks,const QStringList& employee,
+                  const QString description,const QString target, const QDate date);
+  void setFinished(QString task);
 
   void setServerAddress(QString newAddress);
   void unpackReply(QString param);

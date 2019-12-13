@@ -21,6 +21,8 @@ class Project : public QWidget
   QListWidget taskList;
 
   //EDIT
+  QDateEdit dateEdit;
+  QLineEdit target;
   QLabel tasksLabel;
   QLabel employeeLabel;
   QGroupBox GBCheckBox;
@@ -34,6 +36,7 @@ class Project : public QWidget
   QLineEdit newTaskName;
   QStringList checkedTasks;
   QTextEdit newDescription;
+  QMessageBox error;
 
 public:
   Project(QWidget* parent = nullptr);

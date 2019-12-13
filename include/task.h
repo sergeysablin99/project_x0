@@ -3,6 +3,7 @@
 
 #include <QListWidget>
 #include <QWidget>
+#include <QValidator>
 #include <QGridLayout>
 #include <QPlainTextEdit>
 #include <QString>
@@ -15,7 +16,6 @@
 #include <QCheckBox>
 #include <QGroupBox>
 #include <QSharedPointer>
-//#include "user.h"
 #include "network.h"
 
 class Task : public QWidget
@@ -25,17 +25,25 @@ class Task : public QWidget
   Network* network;
 
   //Static
+  QVBoxLayout LMain;
+  QHBoxLayout LLineEdit;
+  QHBoxLayout LGroupBox;
+  QHBoxLayout LButtons;
+
   QString name;
   QLabel target;
   QLabel date;
   QPlainTextEdit description;
   QListWidget employee;
   QListWidget subtask;
-  QGridLayout layout;
+
+//  QGridLayout layout;
   QPushButton editButton;
   QPushButton BBack;
+  QPushButton BFinish;
 
   //Edit
+  QMessageBox error;
   QLabel tasksLabel;
   QLabel employeeLabel;
   QLineEdit nameEdit;
@@ -68,6 +76,7 @@ public:
   QListWidget* getSubtasks();
 
 public slots:
+  void finished();
   void SlotEditButton();
   void returnEmployee();
   void returnSubtasks();

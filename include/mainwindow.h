@@ -38,6 +38,7 @@ class MainWindow : public QWidget
   //SETTINGS
   QPushButton BSettings;
   QLineEdit inputAddress;
+  QMessageBox error;
 
 public:
   MainWindow();

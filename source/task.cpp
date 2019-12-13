@@ -13,16 +13,14 @@ Task::Task(QWidget* parent, QString name, Network* network) : QWidget(parent), n
   connect(this->network, &Network::returnEmployee, this, &Task::returnEmployee);
   connect(this->network, &Network::returnSubtasks, this, &Task::returnSubtasks);
   connect(&(this->BBack), &QPushButton::clicked, this, &Task::back);
+  connect(&(this->BFinish), &QPushButton::clicked, this, &Task::finished);
 
   this->dateEdit.setReadOnly(false);
   this->dateEdit.setVisible(false);
 
-  this->targetEdit.setPlaceholderText("Input your target");
+  this->targetEdit.setPlaceholderText("Input target");
   this->targetEdit.setVisible(false);
   this->targetEdit.setReadOnly(false);
-  this->targetEdit.setMaximumSize(200, 150);
-  this->targetEdit.setBaseSize(30, 30);
-
   this->nameEdit.setPlaceholderText("Input new name");
   this->nameEdit.setHidden(true);
   this->nameEdit.setReadOnly(false);
@@ -31,12 +29,9 @@ Task::Task(QWidget* parent, QString name, Network* network) : QWidget(parent), n
   this->descriptionEdit.setVisible(false);
   this->descriptionEdit.setReadOnly(false);
 
-  this->target.setMaximumWidth(100);
-  this->target.setBaseSize(30, 20);
+  this->BFinish.setText("Finish");
 
   this->description.setReadOnly(true);
-//  this->description.setMaximumSize(200, 70);
-  this->description.setBaseSize(200, 50);
 
   this->editButton.setText("Edit");
   this->BBack.setText("Back");
@@ -51,23 +46,29 @@ Task::Task(QWidget* parent, QString name, Network* network) : QWidget(parent), n
   this->GBTCheckBox.setHidden(true);
 
   //Добавим виджеты на экран
-  this->layout.setContentsMargins(5, 5, 5, 5);
-  this->layout.addWidget(&(this->target), 0, 0, Qt::AlignLeft);
-  this->layout.addWidget(&(this->date), 0, 1, Qt::AlignLeft);
-  this->layout.addWidget(&(this->description), 1, 0, Qt::AlignLeft);
-  this->layout.addWidget(&(this->employee), 2, 0, Qt::AlignLeft);
-  this->layout.addWidget(&(this->subtask), 1, 1, Qt::AlignLeft);
-  this->layout.addWidget(&(this->nameEdit), 1, 1, Qt::AlignLeft);
-  this->layout.addWidget(&(this->BBack), 3, 0, Qt::AlignLeft);
 
-  this->layout.addWidget(&(this->GBECheckBox), 3, 0, Qt::AlignLeft);
-  this->layout.addWidget(&(this->GBTCheckBox), 2, 0, Qt::AlignLeft);
-  this->layout.addWidget(&(this->editButton), 3, 1, Qt::AlignLeft);
-  this->layout.addWidget(&(this->targetEdit), 0, 1, Qt::AlignLeft);
-  this->layout.addWidget(&(this->descriptionEdit), 0, 0, Qt::AlignLeft);
-  this->layout.addWidget(&(this->dateEdit), 2, 1, Qt::AlignLeft);
+  this->LLineEdit.addWidget(&(this->target));
+  this->LLineEdit.addWidget(&(this->date));
+  this->LLineEdit.addWidget(&(this->nameEdit));
+  this->LLineEdit.addWidget(&(this->dateEdit));
 
-  this->setLayout(&(this->layout));
+  this->LButtons.addWidget(&(this->BBack));
+  this->LButtons.addWidget(&(this->BFinish));
+  this->LButtons.addWidget(&(this->editButton));
+
+  this->LGroupBox.addWidget(&(this->subtask));
+  this->LGroupBox.addWidget(&(this->employee));
+  this->LGroupBox.addWidget(&(this->GBTCheckBox));
+  this->LGroupBox.addWidget(&(this->GBECheckBox));
+
+  this->LMain.addLayout(&(this->LLineEdit));
+  this->LMain.addWidget(&(this->targetEdit));
+  this->LMain.addWidget(&(this->description));
+  this->LMain.addWidget(&(this->descriptionEdit));
+  this->LMain.addLayout(&(this->LGroupBox));
+  this->LMain.addLayout(&(this->LButtons));
+
+  this->setLayout(&(this->LMain));
 
   this->network->getEmployee(this->name);
   this->network->tasksSubtasks(this->name);
@@ -79,6 +80,10 @@ void Task::SlotEditButton()
   if (this->editButton.text() == "Edit")  {
       this->description.setVisible(false);
 
+      this->nameEdit.clear();
+      this->descriptionEdit.clear();
+      this->targetEdit.clear();
+
       this->descriptionEdit.setVisible(true);
       this->targetEdit.setVisible(true);
       this->dateEdit.setVisible(true);
@@ -89,6 +94,8 @@ void Task::SlotEditButton()
       this->GBECheckBox.setVisible(true);
       this->GBTCheckBox.setVisible(true);
 
+      this->BFinish.setVisible(false);
+      this->date.setVisible(false);
       this->BBack.setVisible(false);
       this->target.setVisible(false);
       this->subtask.setVisible(false);
@@ -98,28 +105,46 @@ void Task::SlotEditButton()
       this->network->getEmployee();
       this->network->tasksSubtasks();
     } else {
-      if (this->descriptionEdit.toPlainText() != "" && this->descriptionEdit.toPlainText() != this->description.toPlainText())
+      QRegExp exp = QRegExp("[^']+\\w");
+      QRegExpValidator validator;
+      validator.setRegExp(exp);
+      int pos = 0;
+      QString stringToValidate = this->descriptionEdit.toPlainText().simplified() +
+          this->nameEdit.text().simplified() + this->targetEdit.text().simplified();
+
+      if (validator.validate(stringToValidate, pos) != QValidator::Invalid)
         {
-          this->network->changeDescription(this->name, this->descriptionEdit.toPlainText());
-        }
-      if (this->targetEdit.text() != "" && this->targetEdit.text() != this->target.text())
-        {
-          this->network->changeTarget(this->name, this->targetEdit.text());
+          if (this->descriptionEdit.toPlainText() != "" && this->descriptionEdit.toPlainText() != this->description.toPlainText())
+            {
+              this->network->changeDescription(this->name, this->descriptionEdit.toPlainText());
+            }
+
+          if (this->targetEdit.text() != "" && this->targetEdit.text() != this->target.text())
+            {
+              this->network->changeTarget(this->name, this->targetEdit.text());
+            }
+
+          if (this->dateEdit.date() != QDate::fromString(this->date.text().remove("Deadline: "),
+                                                         Qt::ISODate) && this->dateEdit.text() != "")
+            {
+              this->setDate(this->dateEdit.date());
+              this->network->changeDate(this->name, this->dateEdit.date().toString(Qt::ISODate));
+            }
+
+          if (this->nameEdit.text() != "" && this->nameEdit.text() != this->name)
+            {
+              this->network->changeName(this->name, this->nameEdit.text());
+              this->name = this->nameEdit.text();
+            }
+        } else {
+          this->error.setText("Incorrect input");
+          if (!(this->error.button(QMessageBox::Ok)))
+            this->error.addButton(QMessageBox::Ok);
+          this->error.show();
         }
 
-      if (this->dateEdit.date() != QDate::fromString(this->date.text(), Qt::ISODate) && this->dateEdit.text() != "")
+      for (auto employee:this->VECheckBox)
         {
-          this->setDate(this->dateEdit.date());
-          this->network->changeDate(this->name, this->date.text()); // крашится на этом моменте
-        }
-
-      if (this->nameEdit.text() != "" && this->nameEdit.text() != this->name)
-        {
-          this->network->changeName(this->name, this->nameEdit.text());
-          this->name = this->nameEdit.text();
-        }
-
-      for (auto employee:this->VECheckBox){
           if (employee->isChecked())
             this->network->addEmployee(employee->text(), this->name);
           else
@@ -128,7 +153,8 @@ void Task::SlotEditButton()
             }
         }
 
-      for (auto subtask:this->VTCheckBox){
+      for (auto subtask:this->VTCheckBox)
+        {
           if (subtask->isChecked())
             this->network->addSubtask(subtask->text(), this->name);
           else
@@ -146,6 +172,8 @@ void Task::SlotEditButton()
       this->GBECheckBox.setVisible(false);
       this->GBTCheckBox.setVisible(false);
 
+      this->date.setVisible(true);
+      this->BFinish.setVisible(true);
       this->target.setVisible(true);
       this->subtask.setVisible(true);
       this->employee.setVisible(true);
@@ -258,6 +286,8 @@ void Task::returnEmployee()
 
   if (this->LEGroupBox.indexOf(&(this->employeeLabel)) == -1)
     this->LEGroupBox.insertWidget(0, &(this->employeeLabel));
+  this->LEGroupBox.setAlignment(Qt::AlignTop);
+
   if (this->LEGroupBox.indexOf(&(this->LECheckBox)) == -1)
     this->LEGroupBox.addLayout(&(this->LECheckBox));
   if (this->GBECheckBox.layout() == nullptr)
@@ -296,10 +326,13 @@ void Task::returnSubtasks()
     }
 
   this->subtask.clear();
+  checkList.removeAt(checkList.indexOf(this->name));
   this->subtask.addItems(checkList);
 
-  if (this->LTCheckBox.indexOf(&(this->tasksLabel)) == -1)
-    this->LTCheckBox.insertWidget(0, &(this->tasksLabel));
+  if (this->LTGroupBox.indexOf(&(this->tasksLabel)) == -1)
+    this->LTGroupBox.insertWidget(0, &(this->tasksLabel));
+  this->LTGroupBox.setAlignment(Qt::AlignTop);
+
   if (this->LTGroupBox.indexOf(&(this->LTCheckBox)) == -1)
     this->LTGroupBox.addLayout(&(this->LTCheckBox));
   if (this->GBTCheckBox.layout() == nullptr)
@@ -309,4 +342,10 @@ void Task::returnSubtasks()
 QListWidget* Task::getSubtasks()
 {
   return &(this->subtask);
+}
+
+void Task::finished()
+{
+  this->network->setFinished(this->name);
+  back();
 }

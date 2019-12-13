@@ -60,5 +60,13 @@ int main(int argc, char *argv[])
   MainWindow *w = new MainWindow;
   w->show();
 
+//  QRegExp exp = QRegExp("[^']+\\w");
+//  QRegExpValidator val;
+//  val.setRegExp(exp);
+//  int pos = 0;
+//  QVector<QString> string(2);
+//  if (val.validate(str, pos) != QValidator::Invalid)
+
+
   return a.exec();
 }

@@ -143,19 +143,35 @@ void MainWindow::createProject()
     }
   else
     {
-      if (this->newProjectName.text() != "")
+      if (!this->newProjectName.text().isEmpty())
         {
-          QStringList checkedTasks;
-          checkedTasks.clear();
+          QRegExp exp = QRegExp("[^']+\\w");
+          QRegExpValidator validator;
+          validator.setRegExp(exp);
+          int pos = 0;
+          QString stringToValidate = this->newProjectName.text().simplified();
 
-          for (auto checkedTask:this->VCheckBox)
+          if (validator.validate(stringToValidate, pos) != QValidator::Invalid)
             {
-              if (checkedTask->isChecked())
-                checkedTasks.append(checkedTask->text());
+              QStringList checkedTasks;
+              checkedTasks.clear();
+
+              for (auto checkedTask:this->VCheckBox)
+                {
+                  if (checkedTask->isChecked())
+                    checkedTasks.append(checkedTask->text().simplified());
+                }
+
+              this->network.createProject(this->newProjectName.text().simplified(), checkedTasks);
+              this->showMainPage();
             }
-          qDebug() << this->newProjectName.text();
-          this->network.createProject(this->newProjectName.text(), checkedTasks);
-          this->showMainPage();
+          else
+            {
+              this->error.setText("Incorrect input");
+              if (!(this->error.button(QMessageBox::Ok)))
+                this->error.addButton(QMessageBox::Ok);
+              this->error.show();
+            }
         }
       else
         {
@@ -240,7 +256,7 @@ void MainWindow::openProject (QListWidgetItem* projectName)
 void MainWindow::projectClosed()
 {
   connect(&(this->network), &Network::readFinished, this, &MainWindow::getReply);
-
+  connect(&(this->network), &Network::signalReturnPersonaTasks, this, &MainWindow::getPersonalTasks);
   this->showMainPage();
 }
 
@@ -307,13 +323,30 @@ void MainWindow::loggedIn()
 
 void MainWindow::sendLogin()
 {
+
   if (!this->login.text().isEmpty() && !this->login.text().isEmpty())
     {
-      this->network.user.login = this->login.text();
-      this->network.user.password = this->password.text();
-      this->network.login();
+      QRegExp exp = QRegExp("[^']+\\w");
+      QRegExpValidator validator;
+      validator.setRegExp(exp);
+      int pos = 0;
+      QString stringToValidate = this->login.text().simplified() + this->password.text().simplified();
 
-      this->password.clear();
+      if (validator.validate(stringToValidate, pos) != QValidator::Invalid)
+        {
+          this->network.user.login = this->login.text().simplified();
+          this->network.user.password = this->password.text().simplified();
+          this->network.login();
+
+          this->password.clear();
+        }
+  else
+    {
+      this->error.setText("Incorrect input");
+      if (!(this->error.button(QMessageBox::Ok)))
+        this->error.addButton(QMessageBox::Ok);
+      this->error.show();
+    }
     }
 }
 
